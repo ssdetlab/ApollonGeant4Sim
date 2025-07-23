@@ -1,0 +1,19 @@
+/vis/open OGL 600x600-0+0
+
+/vis/drawVolume
+
+/vis/scene/add/axes 0 0 0 1000 mm
+/vis/scene/add/trajectories smooth
+
+/vis/modeling/trajectories/create/drawByParticleID
+/vis/modeling/trajectories/drawByParticleID-0/default/setDrawStepPts true
+/vis/modeling/trajectories/drawByParticleID-0/default/setStepPtsSize 2
+
+/vis/viewer/set/viewpointVector -1 0 0
+/vis/viewer/zoom 1
+/vis/viewer/set/hiddenEdge 0
+/vis/viewer/set/style w
+
+/vis/geometry/set/visibility World 0 false
+
+#/vis/viewer/flush

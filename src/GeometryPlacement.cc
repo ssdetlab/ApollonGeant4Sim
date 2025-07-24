@@ -35,7 +35,7 @@ GeometryPlacement::GeometryPlacement() {
                tc1VaccumChamberDistance + tcHalfZ;
 
   tc1RotationAxis = G4ThreeVector(0, 0, 1);
-  tc1RotationAngle = M_PI_2;
+  tc1RotationAngle = -M_PI_4;
 
   /// ---------------------------------------------------
   /// Dipole
@@ -52,7 +52,7 @@ GeometryPlacement::GeometryPlacement() {
               WendellDipole::instance()->dipoleHalfZ;
 
   /// Dipole rotation parameters in the World frame
-  wdRotationAngle = M_PI_2 * rad;
+  wdRotationAngle = M_PI_2;
   wdRotationAxis = G4ThreeVector(1, 0, 0);
 
   /// ---------------------------------------------------
@@ -68,7 +68,7 @@ GeometryPlacement::GeometryPlacement() {
                tc2DipoleDistance + tcHalfZ;
 
   tc2RotationAxis = G4ThreeVector(0, 0, 1);
-  tc2RotationAngle = M_PI_2;
+  tc2RotationAngle = -M_PI_4;
 
   /// ---------------------------------------------------
   /// Breadboard

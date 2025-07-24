@@ -29,7 +29,8 @@
 
 namespace gc = GeometryConstants;
 
-DetectorConstruction::DetectorConstruction() : G4VUserDetectorConstruction() {}
+DetectorConstruction::DetectorConstruction(double alongWindowTranslation)
+    : translation(alongWindowTranslation), G4VUserDetectorConstruction() {}
 
 DetectorConstruction::~DetectorConstruction() {}
 
@@ -97,16 +98,24 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   const auto &magFieldVolumeObject = wdSearchScene.GetFindings().at(0);
   G4ThreeVector magFieldVolumeTranslation =
       magFieldVolumeObject.fFoundObjectTransformation.getTranslation();
+  G4RotationMatrix magFieldVolumeRotation =
+      magFieldVolumeObject.fFoundObjectTransformation.getRotation();
+
+  G4RotationMatrix rotm;
+  rotm.rotateZ(M_PI_4);
   magFieldVolumeTranslation =
-      G4RotationMatrix(gc::GeometryPlacement::instance()->wdRotationAxis,
-                       gc::GeometryPlacement::instance()->wdRotationAngle) *
-      magFieldVolumeTranslation;
-  physWendellDipole->SetTranslation(G4ThreeVector(
-      magFieldVolumeTranslation.x(), magFieldVolumeTranslation.y(),
-      physWendellDipole->GetTranslation().z()));
+      rotm * *physWendellDipole->GetRotation() * magFieldVolumeTranslation;
+  physWendellDipole->SetTranslation(
+      G4ThreeVector(-magFieldVolumeTranslation.x(),
+                    -magFieldVolumeTranslation.y(),
+                    physWendellDipole->GetTranslation().z()) +
+      G4ThreeVector(translation, translation, 0));
 
   // ---------------------------------------------------
   // First tracking chamber construction
+
+  G4RotationMatrix rotm2;
+  rotm2.rotateZ(M_PI_2);
 
   TrackingChamberFactory::Config tc1FactoryCfg{
       .tcCenterX = gc::GeometryPlacement::instance()->tc1CenterX,
@@ -133,13 +142,18 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   const auto &opppObject1 = tc1SearchScene.GetFindings().at(0);
   G4ThreeVector opppSensitiveTranslation1 =
       opppObject1.fFoundObjectTransformation.getTranslation();
+  G4ThreeVector opppSensitiveRotation1 =
+      opppObject1.fFoundObjectTransformation.getTranslation();
   opppSensitiveTranslation1 =
       G4RotationMatrix(gc::GeometryPlacement::instance()->tc1RotationAxis,
                        gc::GeometryPlacement::instance()->tc1RotationAngle) *
       opppSensitiveTranslation1;
-  physTrackingChamber1->SetTranslation(G4ThreeVector(
-      opppSensitiveTranslation1.x(), opppSensitiveTranslation1.y(),
-      physTrackingChamber1->GetTranslation().z()));
+  opppSensitiveTranslation1 = rotm2 * opppSensitiveTranslation1;
+  physTrackingChamber1->SetTranslation(
+      G4ThreeVector(-opppSensitiveTranslation1.x(),
+                    -opppSensitiveTranslation1.y(),
+                    physTrackingChamber1->GetTranslation().z()) +
+      G4ThreeVector(translation, translation, 0));
 
   // ---------------------------------------------------
   // Second tracking chamber construction
@@ -173,9 +187,12 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4RotationMatrix(gc::GeometryPlacement::instance()->tc2RotationAxis,
                        gc::GeometryPlacement::instance()->tc2RotationAngle) *
       opppSensitiveTranslation2;
-  physTrackingChamber2->SetTranslation(G4ThreeVector(
-      opppSensitiveTranslation2.x(), opppSensitiveTranslation2.y(),
-      physTrackingChamber2->GetTranslation().z()));
+  opppSensitiveTranslation2 = rotm2 * opppSensitiveTranslation2;
+  physTrackingChamber2->SetTranslation(
+      G4ThreeVector(-opppSensitiveTranslation2.x(),
+                    -opppSensitiveTranslation2.y(),
+                    physTrackingChamber2->GetTranslation().z()) +
+      G4ThreeVector(translation, translation, 0));
 
   // ---------------------------------------------------
   // Breadboard table construction
@@ -196,9 +213,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       .bbc = gc::Breadboard::instance(),
 
       .checkOverlaps = true};
-  BreadboardFactory bbFactory(bbFactoryCfg);
-  G4VPhysicalVolume *physBreadboard = bbFactory.construct(
-      logicWorld, gc::GeometryPlacement::instance()->bbName);
+  // BreadboardFactory bbFactory(bbFactoryCfg);
+  // G4VPhysicalVolume *physBreadboard = bbFactory.construct(
+  //     logicWorld, gc::GeometryPlacement::instance()->bbName);
 
   // ---------------------------------------------------
   // Temp sampling plane
@@ -217,7 +234,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       (*vcExitSamplingRotation) *
           G4ThreeVector(0, 0,
                         gc::VacuumChamber::instance()->vcRad -
-                            2 * gc::VacuumChamber::instance()->vcFlangeHalfZ - 2 * mm),
+                            2 * gc::VacuumChamber::instance()->vcFlangeHalfZ -
+                            2 * mm),
       logicVcExitSampling, "VcExitSampling",
       physVacuumChamber->GetLogicalVolume(), false, 0, true);
 

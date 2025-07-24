@@ -109,6 +109,7 @@ G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
   G4RotationMatrix *dipoleRotation = new G4RotationMatrix();
   dipoleRotation->rotate(m_cfg.dipoleRotationAngle, m_cfg.dipoleRotationAxis);
   dipoleRotation->rotateZ(M_PI_2);
+  dipoleRotation->rotateX(M_PI_4);
   G4VPhysicalVolume *physWendellDipole = new G4PVPlacement(
       dipoleRotation,
       G4ThreeVector(m_cfg.dipoleCenterX, m_cfg.dipoleCenterY,

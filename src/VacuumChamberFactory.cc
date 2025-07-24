@@ -413,6 +413,7 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcFlange() {
 
   // Cut the exit window in the flange
   G4RotationMatrix subtractionRotation = G4RotationMatrix::IDENTITY;
+  subtractionRotation.rotateZ(M_PI_4);
   G4Transform3D subtractionTransform(
       subtractionRotation, G4ThreeVector(0, 0, -m_cfg.vcc->vcFlangeHalfZ));
   G4SubtractionSolid *solidVcFlangeMilled =

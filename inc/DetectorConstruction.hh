@@ -13,7 +13,7 @@ class G4PhysicalVolume;
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
  public:
-  DetectorConstruction();
+  DetectorConstruction(double alongWindowTranslation);
   ~DetectorConstruction() override;
 
   G4VPhysicalVolume* Construct() override;
@@ -25,6 +25,8 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
                                              const G4ThreeVector& center,
                                              int id);
   G4bool checkOverlaps;
+
+  double translation;
 };
 
 #endif

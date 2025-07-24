@@ -21,7 +21,7 @@ GeometryPlacement::GeometryPlacement() {
   vcRotationAxis = G4ThreeVector(1, 0, 0);
 
   /// ---------------------------------------------------
-  /// Sampling volume 1
+  /// Tracking chamber 1
 
   tc1Name = "TrackingChamber1";
 
@@ -29,8 +29,8 @@ GeometryPlacement::GeometryPlacement() {
 
   G4double tcHalfZ = TrackingChamber::instance()->trackingChamberHalfZ;
 
-  tc1CenterX = 0 * cm;
-  tc1CenterY = 0 * mm;
+  tc1CenterX = vcCenterX;
+  tc1CenterY = vcCenterY;
   tc1CenterZ = vcCenterZ + VacuumChamber::instance()->vcRad +
                tc1VaccumChamberDistance + tcHalfZ;
 
@@ -56,19 +56,34 @@ GeometryPlacement::GeometryPlacement() {
   wdRotationAxis = G4ThreeVector(1, 0, 0);
 
   /// ---------------------------------------------------
-  /// Sampling volume 2
+  /// Tracking chamber 2
 
   tc2Name = "TrackingChamber2";
 
   tc2DipoleDistance = 2 * cm;
 
-  tc2CenterX = 0 * cm;
-  tc2CenterY = 0 * cm;
+  tc2CenterX = vcCenterX;
+  tc2CenterY = vcCenterY;
   tc2CenterZ = wdCenterZ + WendellDipole::instance()->dipoleHalfZ +
                tc2DipoleDistance + tcHalfZ;
 
   tc2RotationAxis = G4ThreeVector(0, 0, 1);
   tc2RotationAngle = M_PI_2;
+
+  /// ---------------------------------------------------
+  /// Breadboard
+
+  bbName = "BreadboardTable";
+
+  /// Breadboard position in the World
+  bbCenterX = vcCenterX;
+  bbCenterY = vcCenterY;
+  bbCenterZ = tc1CenterZ + tcHalfZ + dipoleSamplingLayers1Distance +
+              WendellDipole::instance()->dipoleHalfZ;
+
+  /// Dipole rotation parameters in the World frame
+  bbRotationAngle = M_PI_2 * rad;
+  bbRotationAxis = G4ThreeVector(1, 0, 0);
 }
 
 GeometryPlacement *GeometryPlacement::instance() {

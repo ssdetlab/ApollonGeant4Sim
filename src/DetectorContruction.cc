@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <string>
 
+#include "BreadboardFactory.hh"
 #include "DetectorConstruction.hh"
 #include "G4Box.hh"
 #include "G4FieldManager.hh"
@@ -176,38 +177,49 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       opppSensitiveTranslation2.x(), opppSensitiveTranslation2.y(),
       physTrackingChamber2->GetTranslation().z()));
 
-  //  // ---------------------------------------------------
-  //  // Sampling IP sphere
-  //  G4Sphere *solidIpSphere = new G4Sphere("IpSphere", 99 * mm, 100 * mm, 0,
-  //                                         2 * M_PI * rad, 0, M_PI * rad);
-  //  G4VisAttributes *samplingPlaneVis = new G4VisAttributes(G4Color::Red());
-  //  G4LogicalVolume *logicSamplingPlane =
-  //      new G4LogicalVolume(solidIpSphere, worldMaterial, "SamplingPlane");
-  //  logicSamplingPlane->SetVisAttributes(samplingPlaneVis);
-  //
-  //  G4VPhysicalVolume *physIpSphere = new G4PVPlacement(
-  //      nullptr, G4ThreeVector(), logicSamplingPlane, "SamplingPlane30",
-  //      physVacuumChamber->GetLogicalVolume(), false, 0, checkOverlaps);
-  //
-  //  // ---------------------------------------------------
-  //  // Sampling layers 1 construciton
-  //
-  //  G4VPhysicalVolume *physSamplingLayers1 = constructSamplingLayers(
-  //      nistManager, logicWorld, mat::samplingLayersName1,
-  //      G4ThreeVector(mat::samplingLayers1CenterX,
-  //      mat::samplingLayers1CenterY,
-  //                    mat::samplingLayers1CenterZ),
-  //      1);
-  //
-  //  // ---------------------------------------------------
-  //  // Sampling volume 2 construciton
-  //
-  //  G4VPhysicalVolume *physSamplingLayers2 = constructSamplingLayers(
-  //      nistManager, logicWorld, mat::samplingLayersName2,
-  //      G4ThreeVector(mat::samplingLayers2CenterX,
-  //      mat::samplingLayers2CenterY,
-  //                    mat::samplingLayers2CenterZ),
-  //      2);
+  // ---------------------------------------------------
+  // Breadboard table construction
+
+  BreadboardFactory::Config bbFactoryCfg{
+      .bbCenterX = gc::GeometryPlacement::instance()->bbCenterX,
+      .bbCenterY = physWendellDipole->GetTranslation().y() -
+                   gc::WendellDipole::instance()->dipoleHalfZ -
+                   gc::Breadboard::instance()->bbHalfZ,
+      .bbCenterZ = gc::VacuumChamber::instance()->vcRad +
+                   gc::Breadboard::instance()->bbHalfY,
+      // .bbCenterZ =
+      //              physWendellDipole->GetTranslation().z(),
+
+      .bbRotationAngle = gc::GeometryPlacement::instance()->bbRotationAngle,
+      .bbRotationAxis = G4ThreeVector(1, 0, 0),
+
+      .bbc = gc::Breadboard::instance(),
+
+      .checkOverlaps = true};
+  BreadboardFactory bbFactory(bbFactoryCfg);
+  G4VPhysicalVolume *physBreadboard = bbFactory.construct(
+      logicWorld, gc::GeometryPlacement::instance()->bbName);
+
+  // ---------------------------------------------------
+  // Temp sampling plane
+
+  G4Tubs *solidVcExitSampling = new G4Tubs(
+      "VcExitSampling", 0, gc::VacuumChamber::instance()->vcFlangeRad, 2 * mm,
+      0, 2 * M_PI);
+  G4LogicalVolume *logicVcExitSampling = new G4LogicalVolume(
+      solidVcExitSampling,
+      G4NistManager::Instance()->FindOrBuildMaterial("G4_Galactic"),
+      "VcExitSampling");
+  G4RotationMatrix *vcExitSamplingRotation = new G4RotationMatrix();
+  vcExitSamplingRotation->rotateX(M_PI_2);
+  G4VPhysicalVolume *physVcExitSampling = new G4PVPlacement(
+      vcExitSamplingRotation,
+      (*vcExitSamplingRotation) *
+          G4ThreeVector(0, 0,
+                        gc::VacuumChamber::instance()->vcRad -
+                            2 * gc::VacuumChamber::instance()->vcFlangeHalfZ - 2 * mm),
+      logicVcExitSampling, "VcExitSampling",
+      physVacuumChamber->GetLogicalVolume(), false, 0, true);
 
   return physWorld;
 }
@@ -218,70 +230,5 @@ void DetectorConstruction::ConstructSDandField() {
                                            "ProtoTrckCarrierPCB");
   G4SDManager::GetSDMpointer()->AddNewDetector(samplingVolume);
   SetSensitiveDetector("logicAlpideSensitive", samplingVolume, true);
+  SetSensitiveDetector("VcExitSampling", samplingVolume, true);
 }
-
-// G4VPhysicalVolume *DetectorConstruction::constructSamplingLayers(
-//     G4NistManager *nistManager, G4LogicalVolume *logicParent,
-//     const std::string &name, const G4ThreeVector &center, int id) {
-//   // ---------------------------------------------------
-//   // Sampling volume construciton
-//
-//   G4Box *solidSamplingLayers =
-//       new G4Box(name, mat::samplingLayersHalfX, mat::samplingLayersHalfY,
-//                 mat::samplingLayersHalfZ);
-//
-//   G4Material *samplingLayersMaterial =
-//       nistManager->FindOrBuildMaterial("G4_AIR");
-//   G4LogicalVolume *logicSamplingLayers =
-//       new G4LogicalVolume(solidSamplingLayers, samplingLayersMaterial, name);
-//   G4VPhysicalVolume *physSamplingLayers =
-//       new G4PVPlacement(nullptr, center, logicSamplingLayers, name,
-//       logicParent,
-//                         false, 0, checkOverlaps);
-//
-//   // ---------------------------------------------------
-//   // Sampling planes construciton
-//
-//   G4Box *solidSamplingPlane =
-//       new G4Box("SamplingPlane", gc::samplingPlaneHalfX,
-//       gc::samplingPlaneHalfY,
-//                 gc::samplingPlaneHalfZ);
-//
-//   G4Material *samplingPlaneMaterial =
-//       nistManager->FindOrBuildMaterial(mat::samplingPlaneMaterial);
-//   G4VisAttributes *samplingPlaneVis = new G4VisAttributes(G4Color::Red());
-//   G4LogicalVolume *logicSamplingPlane = new G4LogicalVolume(
-//       solidSamplingPlane, samplingPlaneMaterial, "SamplingPlane");
-//   logicSamplingPlane->SetVisAttributes(samplingPlaneVis);
-//
-//   G4ThreeVector offset =
-//       (mat::nSamplingPlanes % 2 == 0)
-//           ? G4ThreeVector(0, 0,
-//                           -(0.5 + (mat::nSamplingPlanes / 2.0 - 1)) *
-//                               mat::samplingPlaneSpacing)
-//           : G4ThreeVector(
-//                 0, 0,
-//                 -(mat::nSamplingPlanes - 1) / 2.0 *
-//                 mat::samplingPlaneSpacing);
-//
-//   for (std::size_t i = 0; i < mat::nSamplingPlanes; i++) {
-//     G4ThreeVector samplingPlaneCenter =
-//         offset + G4ThreeVector(0, 0, i * mat::samplingPlaneSpacing);
-//
-//     G4VPhysicalVolume *physSamplingPlane =
-//         new G4PVPlacement(nullptr, samplingPlaneCenter, logicSamplingPlane,
-//                           "SamplingPlane" + std::to_string(id * 10 + i),
-//                           logicSamplingLayers, false, 0, checkOverlaps);
-//   }
-//
-//   return physSamplingLayers;
-// };
-//
-// // G4VPhysicalVolume *DetectorConstruction::constructDipole(
-// //     G4NistManager *nistManager, G4LogicalVolume *logicParent,
-// //     const std::string &name) {
-// //   // ---------------------------------------------------
-// //   // Dipole internals construciton
-// //
-// //   return physDipole;
-// // };

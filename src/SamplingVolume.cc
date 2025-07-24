@@ -28,7 +28,7 @@ void SamplingVolume::Initialize(G4HCofThisEvent* hce) {
 G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   auto newHit = new SamplingHit();
 
-  int id = -1;
+  int id = 100;
   const auto& touchable = aStep->GetTrack()->GetTouchableHandle();
   const auto* history = touchable->GetHistory();
   for (std::size_t i = 0; i < touchable->GetHistoryDepth(); i++) {

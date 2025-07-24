@@ -17,27 +17,6 @@ const G4double worldHalfX = 20 * m;
 const G4double worldHalfY = 20 * m;
 const G4double worldHalfZ = 20 * m;
 
-// /// ---------------------------------------------------
-// /// Sampling plane
-//
-// G4double samplingPlaneHalfX = 6.881280 * mm;
-// G4double samplingPlaneHalfY = 14.97088 * mm;
-// G4double samplingPlaneHalfZ = 50 * um;
-//
-// std::string samplingPlaneMaterial = "G4_Si";
-//
-// /// ---------------------------------------------------
-// /// Sampling volume
-//
-// G4int nSamplingPlanes = 5;
-// G4double samplingPlaneSpacing = 10 * mm;
-//
-// G4double tcHalfX = samplingPlaneHalfX + 1 * um;
-// G4double tcHalfY = samplingPlaneHalfY + 1 * um;
-// G4double tcHalfZ =
-//     (samplingPlaneHalfZ + samplingPlaneSpacing) * (nSamplingPlanes - 1) / 2.0
-//     + 1 * um;
-
 struct GeometryPlacement {
   GeometryPlacement();
   ~GeometryPlacement() = default;
@@ -56,7 +35,7 @@ struct GeometryPlacement {
   G4ThreeVector vcRotationAxis;
 
   /// ---------------------------------------------------
-  /// Sampling volume 1
+  /// Tracking chamber 1
 
   std::string tc1Name;
 
@@ -86,7 +65,7 @@ struct GeometryPlacement {
   G4ThreeVector wdRotationAxis;
 
   /// ---------------------------------------------------
-  /// Sampling volume 2
+  /// Tracking chamber 2
 
   std::string tc2Name;
 
@@ -98,6 +77,18 @@ struct GeometryPlacement {
 
   G4ThreeVector tc2RotationAxis;
   G4double tc2RotationAngle;
+
+  /// ---------------------------------------------------
+  /// Breadboard
+
+  std::string bbName;
+
+  G4double bbCenterX;
+  G4double bbCenterY;
+  G4double bbCenterZ;
+
+  G4ThreeVector bbRotationAxis;
+  G4double bbRotationAngle;
 
  protected:
   static GeometryPlacement* m_instance;

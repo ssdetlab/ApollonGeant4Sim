@@ -29,8 +29,11 @@
 
 namespace gc = GeometryConstants;
 
-DetectorConstruction::DetectorConstruction(double alongWindowTranslation)
-    : translation(alongWindowTranslation), G4VUserDetectorConstruction() {}
+DetectorConstruction::DetectorConstruction(double alongWindowTranslation1,
+                                           double alongWindowTranslation2)
+    : translation1(alongWindowTranslation1),
+      translation2(alongWindowTranslation2),
+      G4VUserDetectorConstruction() {}
 
 DetectorConstruction::~DetectorConstruction() {}
 
@@ -109,7 +112,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(-magFieldVolumeTranslation.x(),
                     -magFieldVolumeTranslation.y(),
                     physWendellDipole->GetTranslation().z()) +
-      G4ThreeVector(translation, translation, 0));
+      G4ThreeVector(translation1, translation1, 0));
 
   // ---------------------------------------------------
   // First tracking chamber construction
@@ -153,7 +156,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(-opppSensitiveTranslation1.x(),
                     -opppSensitiveTranslation1.y(),
                     physTrackingChamber1->GetTranslation().z()) +
-      G4ThreeVector(translation, translation, 0));
+      G4ThreeVector(translation1, translation1, 0));
 
   // ---------------------------------------------------
   // Second tracking chamber construction
@@ -192,7 +195,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(-opppSensitiveTranslation2.x(),
                     -opppSensitiveTranslation2.y(),
                     physTrackingChamber2->GetTranslation().z()) +
-      G4ThreeVector(translation, translation, 0));
+      G4ThreeVector(translation2, translation2, 0));
 
   // ---------------------------------------------------
   // Breadboard table construction

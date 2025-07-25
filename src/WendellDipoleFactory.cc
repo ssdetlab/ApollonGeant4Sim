@@ -61,7 +61,8 @@ WendellDipole::WendellDipole() {
   alSidePlateCutoutHalfZ = 40.5 * mm;
 
   /// Magnetic field vector
-  dipoleField = G4ThreeVector(0.35 * tesla, 0.0, 0.0);
+  // dipoleField = G4ThreeVector(0.35 * tesla, 0.0, 0.0);
+  dipoleField = G4ThreeVector(0.24748737 * tesla, -0.24748737 * tesla, 0);
 
   dipoleSamplingLayers1Distance = 2 * cm;
 

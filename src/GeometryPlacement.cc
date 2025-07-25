@@ -35,7 +35,7 @@ GeometryPlacement::GeometryPlacement() {
                tc1VaccumChamberDistance + tcHalfZ;
 
   tc1RotationAxis = G4ThreeVector(0, 0, 1);
-  tc1RotationAngle = -M_PI_4;
+  tc1RotationAngle = 3 * M_PI_4;
 
   /// ---------------------------------------------------
   /// Dipole
@@ -68,7 +68,7 @@ GeometryPlacement::GeometryPlacement() {
                tc2DipoleDistance + tcHalfZ;
 
   tc2RotationAxis = G4ThreeVector(0, 0, 1);
-  tc2RotationAngle = -M_PI_4;
+  tc2RotationAngle = 3 * M_PI_4;
 
   /// ---------------------------------------------------
   /// Breadboard

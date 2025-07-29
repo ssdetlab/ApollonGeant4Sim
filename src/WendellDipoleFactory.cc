@@ -61,15 +61,15 @@ WendellDipole::WendellDipole() {
   alSidePlateCutoutHalfZ = 40.5 * mm;
 
   /// Magnetic field vector
-  // dipoleField = G4ThreeVector(0.35 * tesla, 0.0, 0.0);
-  dipoleField = G4ThreeVector(0.24748737 * tesla, -0.24748737 * tesla, 0);
+  dipoleField = G4ThreeVector(0.35 * tesla, 0.0, 0.0);
+  // dipoleField = G4ThreeVector(0.24748737 * tesla, -0.24748737 * tesla, 0);
 
   dipoleSamplingLayers1Distance = 2 * cm;
 
   /// Bounding box parameters
-  dipoleHalfX = ironYokeBottomHalfX + 2 * alSidePlateHalfX;
-  dipoleHalfY = ironYokeBottomHalfY;
-  dipoleHalfZ = ironYokeBottomHalfZ + ironYokeSideHalfZ;
+  wdHalfX = ironYokeBottomHalfX + 2 * alSidePlateHalfX;
+  wdHalfY = ironYokeBottomHalfY;
+  wdHalfZ = ironYokeBottomHalfZ + ironYokeSideHalfZ;
 }
 
 WendellDipole *WendellDipole::instance() {
@@ -82,15 +82,15 @@ WendellDipole *WendellDipole::instance() {
 }  // namespace GeometryConstants
 
 G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
-                                                   const std::string &name) {
-  G4Material *alluminium = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.wdc->alPlateMaterial);
-  G4Material *mildSteel = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.wdc->ironYokeMaterial);
-  G4Material *neodymium = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.wdc->magPlateMaterial);
+                                                   const Config &cfg) {
+  G4Material *alluminium =
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.wdc->alPlateMaterial);
+  G4Material *mildSteel =
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.wdc->ironYokeMaterial);
+  G4Material *neodymium =
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.wdc->magPlateMaterial);
   G4Material *air = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.wdc->containerMaterial);
+      cfg.wdc->containerMaterial);
 
   G4VisAttributes *ironVis = new G4VisAttributes(G4Color::Grey());
   G4VisAttributes *alVis = new G4VisAttributes(G4Color::White());
@@ -100,45 +100,43 @@ G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
   // Mother volume construction
 
   G4Box *solidWendellDipole =
-      new G4Box(name, m_cfg.wdc->dipoleHalfX, m_cfg.wdc->dipoleHalfY,
-                m_cfg.wdc->dipoleHalfZ);
+      new G4Box(cfg.name, cfg.wdc->wdHalfX, cfg.wdc->wdHalfY, cfg.wdc->wdHalfZ);
 
   G4LogicalVolume *logicWendellDipole =
-      new G4LogicalVolume(solidWendellDipole, air, name);
+      new G4LogicalVolume(solidWendellDipole, air, cfg.name);
   logicWendellDipole->SetVisAttributes(ironVis);
 
   G4RotationMatrix *dipoleRotation = new G4RotationMatrix();
-  dipoleRotation->rotate(m_cfg.dipoleRotationAngle, m_cfg.dipoleRotationAxis);
-  dipoleRotation->rotateZ(M_PI_2);
-  dipoleRotation->rotateX(M_PI_4);
+  dipoleRotation->rotateX(cfg.wdRotationAngleX);
+  dipoleRotation->rotateY(cfg.wdRotationAngleY);
+  dipoleRotation->rotateZ(cfg.wdRotationAngleZ);
   G4VPhysicalVolume *physWendellDipole = new G4PVPlacement(
       dipoleRotation,
-      G4ThreeVector(m_cfg.dipoleCenterX, m_cfg.dipoleCenterY,
-                    m_cfg.dipoleCenterZ),
-      logicWendellDipole, name, logicParent, false, 0, m_cfg.checkOverlaps);
+      G4ThreeVector(cfg.wdCenterX, cfg.wdCenterY, cfg.wdCenterZ),
+      logicWendellDipole, cfg.name, logicParent, false, 0, cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // Bottom iron yoke construction
 
   G4Box *solidIronYokeBottom =
-      new G4Box("IronYokeBottom", m_cfg.wdc->ironYokeBottomHalfX,
-                m_cfg.wdc->ironYokeBottomHalfY, m_cfg.wdc->ironYokeBottomHalfZ);
+      new G4Box("IronYokeBottom", cfg.wdc->ironYokeBottomHalfX,
+                cfg.wdc->ironYokeBottomHalfY, cfg.wdc->ironYokeBottomHalfZ);
 
   G4LogicalVolume *logicIronYokeBottom =
       new G4LogicalVolume(solidIronYokeBottom, mildSteel, "IronYokeBottom");
   logicIronYokeBottom->SetVisAttributes(ironVis);
 
   G4VPhysicalVolume *physIronYokeBottom = new G4PVPlacement(
-      nullptr, G4ThreeVector(0, 0, -m_cfg.wdc->ironYokeSideHalfZ),
+      nullptr, G4ThreeVector(0, 0, -cfg.wdc->ironYokeSideHalfZ),
       logicIronYokeBottom, "IronYokeBottom", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // Side iron yoke construction
 
   G4Box *solidIronYokeSide =
-      new G4Box("IronYokeSide", m_cfg.wdc->ironYokeSideHalfX,
-                m_cfg.wdc->ironYokeSideHalfY, m_cfg.wdc->ironYokeSideHalfZ);
+      new G4Box("IronYokeSide", cfg.wdc->ironYokeSideHalfX,
+                cfg.wdc->ironYokeSideHalfY, cfg.wdc->ironYokeSideHalfZ);
 
   G4LogicalVolume *logicIronYokeSide =
       new G4LogicalVolume(solidIronYokeSide, mildSteel, "IronYokeSide");
@@ -146,26 +144,26 @@ G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
 
   G4VPhysicalVolume *physIronYokeSideRight = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          0, m_cfg.wdc->ironYokeBottomHalfY - m_cfg.wdc->ironYokeSideHalfY,
-          m_cfg.wdc->ironYokeBottomHalfZ),
+      G4ThreeVector(0,
+                    cfg.wdc->ironYokeBottomHalfY - cfg.wdc->ironYokeSideHalfY,
+                    cfg.wdc->ironYokeBottomHalfZ),
       logicIronYokeSide, "IronYokeSideRight", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   G4VPhysicalVolume *physIronYokeSideLeft = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          0, -m_cfg.wdc->ironYokeBottomHalfY + m_cfg.wdc->ironYokeSideHalfY,
-          m_cfg.wdc->ironYokeBottomHalfZ),
+      G4ThreeVector(0,
+                    -cfg.wdc->ironYokeBottomHalfY + cfg.wdc->ironYokeSideHalfY,
+                    cfg.wdc->ironYokeBottomHalfZ),
       logicIronYokeSide, "IronYokeSideLeft", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // Magnetic plates construction
 
   G4Box *solidMagPlate =
-      new G4Box("MagPlate", m_cfg.wdc->magPlateHalfX, m_cfg.wdc->magPlateHalfY,
-                m_cfg.wdc->magPlateHalfZ);
+      new G4Box("MagPlate", cfg.wdc->magPlateHalfX, cfg.wdc->magPlateHalfY,
+                cfg.wdc->magPlateHalfZ);
 
   G4LogicalVolume *logicMagPlate =
       new G4LogicalVolume(solidMagPlate, neodymium, "MagPlate");
@@ -173,32 +171,30 @@ G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
 
   G4VPhysicalVolume *physMagPlateRight = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          0,
-          m_cfg.wdc->ironYokeBottomHalfY - 2 * m_cfg.wdc->ironYokeSideHalfY -
-              m_cfg.wdc->magPlateHalfY,
-          m_cfg.wdc->ironYokeBottomHalfZ - m_cfg.wdc->ironYokeSideHalfZ +
-              2 * m_cfg.wdc->alSpacerHalfZ + m_cfg.wdc->magPlateHalfZ),
+      G4ThreeVector(0,
+                    cfg.wdc->ironYokeBottomHalfY -
+                        2 * cfg.wdc->ironYokeSideHalfY - cfg.wdc->magPlateHalfY,
+                    cfg.wdc->ironYokeBottomHalfZ - cfg.wdc->ironYokeSideHalfZ +
+                        2 * cfg.wdc->alSpacerHalfZ + cfg.wdc->magPlateHalfZ),
       logicMagPlate, "MagPlateRight", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   G4VPhysicalVolume *physMagPlateLeft = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          0,
-          -m_cfg.wdc->ironYokeBottomHalfY + 2 * m_cfg.wdc->ironYokeSideHalfY +
-              m_cfg.wdc->magPlateHalfY,
-          m_cfg.wdc->ironYokeBottomHalfZ - m_cfg.wdc->ironYokeSideHalfZ +
-              2 * m_cfg.wdc->alSpacerHalfZ + m_cfg.wdc->magPlateHalfZ),
+      G4ThreeVector(0,
+                    -cfg.wdc->ironYokeBottomHalfY +
+                        2 * cfg.wdc->ironYokeSideHalfY + cfg.wdc->magPlateHalfY,
+                    cfg.wdc->ironYokeBottomHalfZ - cfg.wdc->ironYokeSideHalfZ +
+                        2 * cfg.wdc->alSpacerHalfZ + cfg.wdc->magPlateHalfZ),
       logicMagPlate, "MagPlateLeft", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // Iron plates construction
 
   G4Box *solidIronPlate =
-      new G4Box("IronPlate", m_cfg.wdc->ironPlateHalfX,
-                m_cfg.wdc->ironPlateHalfY, m_cfg.wdc->ironPlateHalfZ);
+      new G4Box("IronPlate", cfg.wdc->ironPlateHalfX, cfg.wdc->ironPlateHalfY,
+                cfg.wdc->ironPlateHalfZ);
 
   G4LogicalVolume *logicIronPlate =
       new G4LogicalVolume(solidIronPlate, mildSteel, "IronPlate");
@@ -206,59 +202,58 @@ G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
 
   G4VPhysicalVolume *physIronPlateRight = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          0,
-          m_cfg.wdc->ironYokeBottomHalfY - 2 * m_cfg.wdc->ironYokeSideHalfY -
-              2 * m_cfg.wdc->magPlateHalfY - m_cfg.wdc->ironPlateHalfY,
-          m_cfg.wdc->ironYokeBottomHalfZ - m_cfg.wdc->ironYokeSideHalfZ +
-              2 * m_cfg.wdc->alSpacerHalfZ + m_cfg.wdc->ironPlateHalfZ),
+      G4ThreeVector(0,
+                    cfg.wdc->ironYokeBottomHalfY -
+                        2 * cfg.wdc->ironYokeSideHalfY -
+                        2 * cfg.wdc->magPlateHalfY - cfg.wdc->ironPlateHalfY,
+                    cfg.wdc->ironYokeBottomHalfZ - cfg.wdc->ironYokeSideHalfZ +
+                        2 * cfg.wdc->alSpacerHalfZ + cfg.wdc->ironPlateHalfZ),
       logicIronPlate, "IronPlateRight", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   G4VPhysicalVolume *physIronPlateLeft = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          0,
-          -m_cfg.wdc->ironYokeBottomHalfY + 2 * m_cfg.wdc->ironYokeSideHalfY +
-              2 * m_cfg.wdc->magPlateHalfY + m_cfg.wdc->ironPlateHalfY,
-          m_cfg.wdc->ironYokeBottomHalfZ - m_cfg.wdc->ironYokeSideHalfZ +
-              2 * m_cfg.wdc->alSpacerHalfZ + m_cfg.wdc->ironPlateHalfZ),
+      G4ThreeVector(0,
+                    -cfg.wdc->ironYokeBottomHalfY +
+                        2 * cfg.wdc->ironYokeSideHalfY +
+                        2 * cfg.wdc->magPlateHalfY + cfg.wdc->ironPlateHalfY,
+                    cfg.wdc->ironYokeBottomHalfZ - cfg.wdc->ironYokeSideHalfZ +
+                        2 * cfg.wdc->alSpacerHalfZ + cfg.wdc->ironPlateHalfZ),
       logicIronPlate, "IronPlateLeft", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // Aluminium spacer construction
 
   G4Box *solidAlSpacer =
-      new G4Box("AlSpacer", m_cfg.wdc->alSpacerHalfX, m_cfg.wdc->alSpacerHalfY,
-                m_cfg.wdc->alSpacerHalfZ);
+      new G4Box("AlSpacer", cfg.wdc->alSpacerHalfX, cfg.wdc->alSpacerHalfY,
+                cfg.wdc->alSpacerHalfZ);
 
   G4LogicalVolume *logicAlSpacer =
       new G4LogicalVolume(solidAlSpacer, alluminium, "AlSpacer");
   logicAlSpacer->SetVisAttributes(alVis);
 
-  G4VPhysicalVolume *physAlSpacer =
-      new G4PVPlacement(nullptr,
-                        G4ThreeVector(0, 0,
-                                      m_cfg.wdc->ironYokeBottomHalfZ -
-                                          m_cfg.wdc->ironYokeSideHalfZ +
-                                          m_cfg.wdc->alSpacerHalfZ),
-                        logicAlSpacer, "AlSpacer", logicWendellDipole, false, 0,
-                        m_cfg.checkOverlaps);
+  G4VPhysicalVolume *physAlSpacer = new G4PVPlacement(
+      nullptr,
+      G4ThreeVector(0, 0,
+                    cfg.wdc->ironYokeBottomHalfZ - cfg.wdc->ironYokeSideHalfZ +
+                        cfg.wdc->alSpacerHalfZ),
+      logicAlSpacer, "AlSpacer", logicWendellDipole, false, 0,
+      cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // Aluminium side plates construction
 
   G4Box *solidAlSidePlateRectangle =
-      new G4Box("AlSidePlateRectangle", m_cfg.wdc->alSidePlateHalfX,
-                m_cfg.wdc->alSidePlateHalfY, m_cfg.wdc->alSidePlateHalfZ);
+      new G4Box("AlSidePlateRectangle", cfg.wdc->alSidePlateHalfX,
+                cfg.wdc->alSidePlateHalfY, cfg.wdc->alSidePlateHalfZ);
   G4Box *solidAlSidePlateCutout = new G4Box(
-      "AlSidePlateCutout", m_cfg.wdc->alSidePlateCutoutHalfX,
-      m_cfg.wdc->alSidePlateCutoutHalfY, 2 * m_cfg.wdc->alSidePlateCutoutHalfZ);
+      "AlSidePlateCutout", cfg.wdc->alSidePlateCutoutHalfX,
+      cfg.wdc->alSidePlateCutoutHalfY, 2 * cfg.wdc->alSidePlateCutoutHalfZ);
   G4SubtractionSolid *solidAlSidePlate = new G4SubtractionSolid(
       "AlSidePlate", solidAlSidePlateRectangle, solidAlSidePlateCutout,
       G4Transform3D(G4RotationMatrix::IDENTITY,
-                    G4ThreeVector(0, 0, m_cfg.wdc->alSidePlateHalfZ)));
+                    G4ThreeVector(0, 0, cfg.wdc->alSidePlateHalfZ)));
 
   G4LogicalVolume *logicAlSidePlate =
       new G4LogicalVolume(solidAlSidePlate, alluminium, "AlSidePlate");
@@ -266,42 +261,40 @@ G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
 
   G4VPhysicalVolume *physAlSidePlateFront = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          m_cfg.wdc->ironYokeBottomHalfX + m_cfg.wdc->alSidePlateHalfX, 0, 0),
+      G4ThreeVector(cfg.wdc->ironYokeBottomHalfX + cfg.wdc->alSidePlateHalfX, 0,
+                    0),
       logicAlSidePlate, "AlSidePlateFront", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   G4VPhysicalVolume *physAlSidePlateBack = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          -m_cfg.wdc->ironYokeBottomHalfX - m_cfg.wdc->alSidePlateHalfX, 0, 0),
+      G4ThreeVector(-cfg.wdc->ironYokeBottomHalfX - cfg.wdc->alSidePlateHalfX,
+                    0, 0),
       logicAlSidePlate, "AlSidePlateBack", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // Magnetic field volume construction
 
-  G4UniformMagField *dipoleField =
-      new G4UniformMagField(m_cfg.wdc->dipoleField);
+  G4UniformMagField *dipoleField = new G4UniformMagField(cfg.wdc->dipoleField);
   G4FieldManager *dipoleFieldMgr = new G4FieldManager(dipoleField);
 
   G4Box *solidMagFieldVolume =
-      new G4Box("MagFieldVolume", m_cfg.wdc->alSpacerHalfX,
-                m_cfg.wdc->alSpacerHalfY - 2 * m_cfg.wdc->magPlateHalfY -
-                    2 * m_cfg.wdc->ironPlateHalfY,
-                m_cfg.wdc->ironPlateHalfZ);
+      new G4Box("MagFieldVolume", cfg.wdc->alSpacerHalfX,
+                cfg.wdc->alSpacerHalfY - 2 * cfg.wdc->magPlateHalfY -
+                    2 * cfg.wdc->ironPlateHalfY,
+                cfg.wdc->ironPlateHalfZ);
 
   G4LogicalVolume *logicMagFieldVolume =
       new G4LogicalVolume(solidMagFieldVolume, air, "MagFieldVolume");
   logicMagFieldVolume->SetFieldManager(dipoleFieldMgr, false);
   G4VPhysicalVolume *physMagFieldVolume = new G4PVPlacement(
       nullptr,
-      G4ThreeVector(
-          0, 0,
-          m_cfg.wdc->ironYokeBottomHalfZ - m_cfg.wdc->ironYokeSideHalfZ +
-              2 * m_cfg.wdc->alSpacerHalfZ + m_cfg.wdc->ironPlateHalfZ),
+      G4ThreeVector(0, 0,
+                    cfg.wdc->ironYokeBottomHalfZ - cfg.wdc->ironYokeSideHalfZ +
+                        2 * cfg.wdc->alSpacerHalfZ + cfg.wdc->ironPlateHalfZ),
       logicMagFieldVolume, "MagFieldVolume", logicWendellDipole, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
   dipoleFieldMgr->CreateChordFinder(dipoleField);
 
   return physWendellDipole;

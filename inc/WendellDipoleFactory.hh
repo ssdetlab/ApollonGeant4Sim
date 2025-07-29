@@ -66,9 +66,9 @@ struct WendellDipole {
   G4double dipoleSamplingLayers1Distance;
 
   /// Bounding box parameters
-  G4double dipoleHalfX;
-  G4double dipoleHalfY;
-  G4double dipoleHalfZ;
+  G4double wdHalfX;
+  G4double wdHalfY;
+  G4double wdHalfZ;
 
  protected:
   static WendellDipole *m_instance;
@@ -79,30 +79,30 @@ struct WendellDipole {
 class WendellDipoleFactory {
  public:
   struct Config {
+    /// Dipole name
+    std::string name;
+
     /// Magnet position in the World
-    G4double dipoleCenterX;
-    G4double dipoleCenterY;
-    G4double dipoleCenterZ;
+    G4double wdCenterX;
+    G4double wdCenterY;
+    G4double wdCenterZ;
 
     /// Magnet rotation parameters in the World frame
-    G4double dipoleRotationAngle;
-    G4ThreeVector dipoleRotationAxis;
+    G4double wdRotationAngleX;
+    G4double wdRotationAngleY;
+    G4double wdRotationAngleZ;
 
     /// Dipole parameters
-    const GeometryConstants::WendellDipole* wdc;
+    const GeometryConstants::WendellDipole *wdc;
 
     /// Check overlaps flag
     G4bool checkOverlaps;
   };
 
-  WendellDipoleFactory(const Config &cfg) : m_cfg(cfg) {};
+  WendellDipoleFactory() = default;
   ~WendellDipoleFactory() = default;
 
-  G4VPhysicalVolume *construct(G4LogicalVolume *logicParent,
-                               const std::string &name);
-
- private:
-  Config m_cfg;
+  G4VPhysicalVolume *construct(G4LogicalVolume *logicParent, const Config &cfg);
 };
 
 #endif

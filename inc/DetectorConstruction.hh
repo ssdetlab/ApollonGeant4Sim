@@ -14,7 +14,8 @@ class G4PhysicalVolume;
 class DetectorConstruction : public G4VUserDetectorConstruction {
  public:
   DetectorConstruction(double alongWindowTranslation1,
-                       double alongWindowTranslation2);
+                       double alongWindowTranslation2, 
+                       double alpha);
   ~DetectorConstruction() override;
 
   G4VPhysicalVolume* Construct() override;
@@ -29,6 +30,7 @@ class DetectorConstruction : public G4VUserDetectorConstruction {
 
   double translation1;
   double translation2;
+  double angle;
 };
 
 #endif

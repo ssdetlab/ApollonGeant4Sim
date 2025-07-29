@@ -4,7 +4,6 @@
 #include "G4AssemblyVolume.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4RunManager.hh"
-#include "G4ThreeVector.hh"
 #include "G4Types.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4VSolid.hh"
@@ -27,9 +26,6 @@ struct Breadboard {
   G4double bbHalfY;
   G4double bbHalfZ;
 
-  G4double bbRotationAxis;
-  G4double bbRotationAngle;
-
   G4double holeRad;
   G4double holeHalfSpacing;
 
@@ -42,14 +38,18 @@ struct Breadboard {
 class BreadboardFactory {
  public:
   struct Config {
-    /// TC position in the World
+    /// Breadboard name
+    std::string name;
+
+    /// Breadboard position in the World
     G4double bbCenterX;
     G4double bbCenterY;
     G4double bbCenterZ;
 
-    /// TC rotation parameters in the World frame
-    G4double bbRotationAngle;
-    G4ThreeVector bbRotationAxis;
+    /// Breadboard rotation parameters in the World frame
+    G4double bbRotationAngleX;
+    G4double bbRotationAngleY;
+    G4double bbRotationAngleZ;
 
     const GeometryConstants::Breadboard *bbc;
 
@@ -57,14 +57,10 @@ class BreadboardFactory {
     G4bool checkOverlaps;
   };
 
-  BreadboardFactory(const Config &cfg) : m_cfg(cfg) {};
+  BreadboardFactory() = default;
   ~BreadboardFactory() = default;
 
-  G4VPhysicalVolume *construct(G4LogicalVolume *logicParent,
-                               const std::string &name);
-
- private:
-  Config m_cfg;
+  G4VPhysicalVolume *construct(G4LogicalVolume *logicParent, const Config &cfg);
 };
 
 #endif

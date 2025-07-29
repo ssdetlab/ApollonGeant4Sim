@@ -17,8 +17,9 @@ GeometryPlacement::GeometryPlacement() {
   vcCenterZ = 0 * cm;
 
   /// VC rotation parameters in the World frame
-  vcRotationAngle = M_PI_2 * rad;
-  vcRotationAxis = G4ThreeVector(1, 0, 0);
+  vcRotationAngleX = M_PI_2 * rad;
+  vcRotationAngleY = 0 * rad;
+  vcRotationAngleZ = 0 * rad;
 
   /// ---------------------------------------------------
   /// Tracking chamber 1
@@ -34,8 +35,10 @@ GeometryPlacement::GeometryPlacement() {
   tc1CenterZ = vcCenterZ + VacuumChamber::instance()->vcRad +
                tc1VaccumChamberDistance + tcHalfZ;
 
-  tc1RotationAxis = G4ThreeVector(0, 0, 1);
-  tc1RotationAngle = 3 * M_PI_4;
+  tc1RotationAngleX = 0;
+  tc1RotationAngleY = 0;
+  // tc1RotationAngleZ = 3 * M_PI_4;
+  tc1RotationAngleZ = M_PI_2;
 
   /// ---------------------------------------------------
   /// Dipole
@@ -49,11 +52,13 @@ GeometryPlacement::GeometryPlacement() {
   wdCenterY = vcCenterY;
 
   wdCenterZ = tc1CenterZ + tcHalfZ + dipoleSamplingLayers1Distance +
-              WendellDipole::instance()->dipoleHalfZ;
+              WendellDipole::instance()->wdHalfZ;
 
   /// Dipole rotation parameters in the World frame
-  wdRotationAngle = M_PI_2;
-  wdRotationAxis = G4ThreeVector(1, 0, 0);
+  wdRotationAngleX = M_PI_2 * rad;
+  // wdRotationAngleY = -M_PI_4 * rad;
+  wdRotationAngleY = 0;
+  wdRotationAngleZ = M_PI_2 * rad;
 
   /// ---------------------------------------------------
   /// Tracking chamber 2
@@ -64,26 +69,44 @@ GeometryPlacement::GeometryPlacement() {
 
   tc2CenterX = vcCenterX;
   tc2CenterY = vcCenterY;
-  tc2CenterZ = wdCenterZ + WendellDipole::instance()->dipoleHalfZ +
+  tc2CenterZ = wdCenterZ + WendellDipole::instance()->wdHalfZ +
                tc2DipoleDistance + tcHalfZ;
 
-  tc2RotationAxis = G4ThreeVector(0, 0, 1);
-  tc2RotationAngle = 3 * M_PI_4;
+  tc2RotationAngleX = 0;
+  tc2RotationAngleY = 0;
+  // tc2RotationAngleZ = 3 * M_PI_4;
+  tc2RotationAngleZ = M_PI_2;
 
   /// ---------------------------------------------------
-  /// Breadboard
+  /// Angled breadboard
 
-  bbName = "BreadboardTable";
+  bb1Name = "AngledBreadboard";
 
-  /// Breadboard position in the World
-  bbCenterX = vcCenterX;
-  bbCenterY = vcCenterY;
-  bbCenterZ = tc1CenterZ + tcHalfZ + dipoleSamplingLayers1Distance +
-              WendellDipole::instance()->dipoleHalfZ;
+  /// Breadboard rotation parameters in the World frame
+  bb1RotationAngleX = M_PI_2 * rad;
+  bb1RotationAngleY = M_PI_4 * rad;
+  bb1RotationAngleZ = 0 * rad;
 
-  /// Dipole rotation parameters in the World frame
-  bbRotationAngle = M_PI_2 * rad;
-  bbRotationAxis = G4ThreeVector(1, 0, 0);
+  /// ---------------------------------------------------
+  /// Support breadboard
+
+  bb2Name = "SupportBreadboard";
+
+  /// Breadboard rotation parameters in the World frame
+  bb2RotationAngleX = M_PI_2 * rad;
+  bb2RotationAngleY = 0 * rad;
+  bb2RotationAngleZ = 0 * rad;
+
+  /// ---------------------------------------------------
+  /// Breadboard mount
+
+  bm1Name = "BreadboardMount1";
+  bm2Name = "BreadboardMount2";
+
+  /// Breadboard rotation parameters in the World frame
+  bmRotationAngleX = M_PI_2 * rad;
+  bmRotationAngleY = M_PI_2 * rad;
+  bmRotationAngleZ = 0 * rad;
 }
 
 GeometryPlacement *GeometryPlacement::instance() {

@@ -2,6 +2,9 @@
 
 #include <cstddef>
 
+#include <G4Transform3D.hh>
+#include <G4UnionSolid.hh>
+
 #include "G4MultiUnion.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
@@ -21,9 +24,8 @@ Breadboard *Breadboard::m_instance = nullptr;
 Breadboard::Breadboard() {
   bbMaterial = "G4_Al";
 
-  bbHalfX = 150 * mm;
-  bbHalfY = 225 * mm;
-  // bbHalfY = 125 * mm;
+  bbHalfX = 75 * mm;
+  bbHalfY = 180 * mm;
   bbHalfZ = 6.35 * mm;
 
   holeRad = 3 * mm;
@@ -40,31 +42,32 @@ Breadboard *Breadboard::instance() {
 }  // namespace GeometryConstants
 
 G4VPhysicalVolume *BreadboardFactory::construct(G4LogicalVolume *logicParent,
-                                                const std::string &name) {
+                                                const Config &cfg) {
   G4Material *aluminium =
-      G4NistManager::Instance()->FindOrBuildMaterial(m_cfg.bbc->bbMaterial);
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.bbc->bbMaterial);
 
   G4VisAttributes *alVis = new G4VisAttributes(G4Color::White());
 
   // Construct the solid breadboard
-  G4Box *solidBreadboardBox = new G4Box("BreadboardBox", m_cfg.bbc->bbHalfX,
-                                        m_cfg.bbc->bbHalfY, m_cfg.bbc->bbHalfZ);
+  G4Box *solidBreadboardBox = new G4Box("BreadboardBox", cfg.bbc->bbHalfX,
+                                        cfg.bbc->bbHalfY, cfg.bbc->bbHalfZ);
 
   G4Tubs *solidBreadboardHole =
-      new G4Tubs("BreadboardHole", 0, m_cfg.bbc->holeRad,
-                 m_cfg.bbc->bbHalfZ * 1.01, 0, 2 * M_PI);
+      new G4Tubs("BreadboardHole", 0, cfg.bbc->holeRad, cfg.bbc->bbHalfZ * 1.01,
+                 0, 2 * M_PI);
 
   G4MultiUnion *solidBreadboardHoleUnion =
       new G4MultiUnion("BreadboardHoleUnion");
-  int nHolesX = m_cfg.bbc->bbHalfX / m_cfg.bbc->holeHalfSpacing;
-  int nHolesY = m_cfg.bbc->bbHalfY / m_cfg.bbc->holeHalfSpacing;
+
+  int nHolesX = cfg.bbc->bbHalfX / cfg.bbc->holeHalfSpacing;
+  int nHolesY = cfg.bbc->bbHalfY / cfg.bbc->holeHalfSpacing;
 
   for (std::size_t i = 0; i < nHolesX; i++) {
-    G4double xTranslation = -m_cfg.bbc->bbHalfX + m_cfg.bbc->holeHalfSpacing +
-                            2 * i * m_cfg.bbc->holeHalfSpacing;
+    G4double xTranslation = -cfg.bbc->bbHalfX + cfg.bbc->holeHalfSpacing +
+                            2 * i * cfg.bbc->holeHalfSpacing;
     for (std::size_t j = 0; j < nHolesY; j++) {
-      G4double yTranslation = -m_cfg.bbc->bbHalfY + m_cfg.bbc->holeHalfSpacing +
-                              2 * j * m_cfg.bbc->holeHalfSpacing;
+      G4double yTranslation = -cfg.bbc->bbHalfY + cfg.bbc->holeHalfSpacing +
+                              2 * j * cfg.bbc->holeHalfSpacing;
 
       solidBreadboardHoleUnion->AddNode(
           solidBreadboardHole,
@@ -74,19 +77,29 @@ G4VPhysicalVolume *BreadboardFactory::construct(G4LogicalVolume *logicParent,
   }
   solidBreadboardHoleUnion->Voxelize();
 
+  // Add double density spacing
+  G4UnionSolid *ddSolidBreadboardHoleUnion = new G4UnionSolid(
+      "DoubleDensityBreadboardHoleUnion", solidBreadboardHoleUnion,
+      solidBreadboardHoleUnion,
+      G4Transform3D(
+          G4RotationMatrix::IDENTITY,
+          G4ThreeVector(-cfg.bbc->holeHalfSpacing, cfg.bbc->holeHalfSpacing)));
+
   G4SubtractionSolid *solidBreadboard = new G4SubtractionSolid(
-      name, solidBreadboardBox, solidBreadboardHoleUnion);
+      cfg.name, solidBreadboardBox, ddSolidBreadboardHoleUnion);
 
   G4LogicalVolume *logicBreadboard =
-      new G4LogicalVolume(solidBreadboard, aluminium, name);
+      new G4LogicalVolume(solidBreadboard, aluminium, cfg.name);
   logicBreadboard->SetVisAttributes(alVis);
 
   G4RotationMatrix *breadboardRotation = new G4RotationMatrix();
-  breadboardRotation->rotate(m_cfg.bbRotationAngle, m_cfg.bbRotationAxis);
+  breadboardRotation->rotateX(cfg.bbRotationAngleX);
+  breadboardRotation->rotateY(cfg.bbRotationAngleY);
+  breadboardRotation->rotateZ(cfg.bbRotationAngleZ);
   G4VPhysicalVolume *physBreadboard = new G4PVPlacement(
       breadboardRotation,
-      G4ThreeVector(m_cfg.bbCenterX, m_cfg.bbCenterY, m_cfg.bbCenterZ),
-      logicBreadboard, name, logicParent, false, 0, m_cfg.checkOverlaps);
+      G4ThreeVector(cfg.bbCenterX, cfg.bbCenterY, cfg.bbCenterZ),
+      logicBreadboard, cfg.name, logicParent, false, 0, cfg.checkOverlaps);
 
   return physBreadboard;
 }

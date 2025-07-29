@@ -89,60 +89,66 @@ VacuumChamber *VacuumChamber::instance() {
 }  // namespace GeometryConstants
 
 G4VPhysicalVolume *VacuumChamberFactory::construct(G4LogicalVolume *logicParent,
-                                                   const std::string &name) {
-  G4Material *vcVacuumMaterial = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.vcc->vcVacuumMaterial);
-  G4Material *vcWallsMaterial = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.vcc->vcWallsMaterial);
-  G4Material *vcDoorsMaterial = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.vcc->vcDoorsMaterial);
+                                                   const Config &cfg) {
+  G4Material *vcVacuumMaterial =
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.vcc->vcVacuumMaterial);
+  G4Material *vcWallsMaterial =
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.vcc->vcWallsMaterial);
+  G4Material *vcDoorsMaterial =
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.vcc->vcDoorsMaterial);
   G4Material *vcWindowsMaterial =
       G4NistManager::Instance()->FindOrBuildMaterial(
-          m_cfg.vcc->vcWindowsMaterial);
-  G4Material *vcFlangeMaterial = G4NistManager::Instance()->FindOrBuildMaterial(
-      m_cfg.vcc->vcFlangeMaterial);
+          cfg.vcc->vcWindowsMaterial);
+  G4Material *vcFlangeMaterial =
+      G4NistManager::Instance()->FindOrBuildMaterial(cfg.vcc->vcFlangeMaterial);
 
   // ---------------------------------------------------
   // Solids construction
 
   // VC walls and vacuum construction
-  auto [solidVcWalls, solidVcWallsVacuum] = constructVcWalls();
+  auto [solidVcWalls, solidVcWallsVacuum] = constructVcWalls(cfg);
 
   // VC exit doors construction
-  auto [solidVcDoors, solidVcDoorsVacuum] = constructVcDoors();
+  auto [solidVcDoors, solidVcDoorsVacuum] = constructVcDoors(cfg);
 
   // VC exit windows construction
-  auto [solidVcWindows, solidVcWindowsVacuum] = constructVcWindows();
+  auto [solidVcWindows, solidVcWindowsVacuum] = constructVcWindows(cfg);
 
   // VC exit window flange construction
-  auto [solidVcFlange, solidVcFlangeVacuum] = constructVcFlange();
+  auto [solidVcFlange, solidVcFlangeVacuum] = constructVcFlange(cfg);
 
   // ---------------------------------------------------
   // Vacuum solid assembly
 
-  G4MultiUnion *solidVcVacuum = new G4MultiUnion("VcVacuum");
+  G4MultiUnion *solidVcVacuum = new G4MultiUnion(cfg.name);
   G4Transform3D vacuumWallsTranform(G4RotationMatrix::IDENTITY,
                                     G4ThreeVector());
   solidVcVacuum->AddNode(solidVcWallsVacuum, vacuumWallsTranform);
 
   G4RotationMatrix vacuumDoorsRotationMatrix = G4RotationMatrix::IDENTITY;
-  vacuumDoorsRotationMatrix.rotate(m_cfg.vcRotationAngle, m_cfg.vcRotationAxis);
+  vacuumDoorsRotationMatrix.rotateX(cfg.vcRotationAngleX);
+  vacuumDoorsRotationMatrix.rotateY(cfg.vcRotationAngleY);
+  vacuumDoorsRotationMatrix.rotateZ(cfg.vcRotationAngleZ);
   G4Transform3D vacuumDoorsTransform(vacuumDoorsRotationMatrix,
                                      G4ThreeVector());
   solidVcVacuum->AddNode(solidVcDoorsVacuum, vacuumDoorsTransform);
 
   G4RotationMatrix vacuumWindowsRotation = G4RotationMatrix::IDENTITY;
-  vacuumWindowsRotation.rotate(m_cfg.vcRotationAngle, m_cfg.vcRotationAxis);
+  vacuumWindowsRotation.rotateX(cfg.vcRotationAngleX);
+  vacuumWindowsRotation.rotateY(cfg.vcRotationAngleY);
+  vacuumWindowsRotation.rotateZ(cfg.vcRotationAngleZ);
   G4Transform3D vacuumWindowsTransform(vacuumWindowsRotation, G4ThreeVector());
   solidVcVacuum->AddNode(solidVcWindowsVacuum, vacuumWindowsTransform);
 
   G4RotationMatrix vacuumFlangeRotation = G4RotationMatrix::IDENTITY;
-  vacuumFlangeRotation.rotate(m_cfg.vcRotationAngle, m_cfg.vcRotationAxis);
+  vacuumFlangeRotation.rotateX(cfg.vcRotationAngleX);
+  vacuumFlangeRotation.rotateY(cfg.vcRotationAngleY);
+  vacuumFlangeRotation.rotateZ(cfg.vcRotationAngleZ);
   G4Transform3D vacuumFlangeTransform(
       vacuumFlangeRotation,
-      vacuumFlangeRotation * G4ThreeVector(m_cfg.vcc->vcFlangeCenterX,
-                                           m_cfg.vcc->vcFlangeCenterY,
-                                           m_cfg.vcc->vcFlangeCenterZ));
+      vacuumFlangeRotation * G4ThreeVector(cfg.vcc->vcFlangeCenterX,
+                                           cfg.vcc->vcFlangeCenterY,
+                                           cfg.vcc->vcFlangeCenterZ));
   solidVcVacuum->AddNode(solidVcFlangeVacuum, vacuumFlangeTransform);
   solidVcVacuum->Voxelize();
 
@@ -150,18 +156,20 @@ G4VPhysicalVolume *VacuumChamberFactory::construct(G4LogicalVolume *logicParent,
   // Vacuum log/phys construction
 
   G4LogicalVolume *logicVcVacuum =
-      new G4LogicalVolume(solidVcVacuum, vcVacuumMaterial, "VcVacuum");
+      new G4LogicalVolume(solidVcVacuum, vcVacuumMaterial, cfg.name);
 
   G4VisAttributes *vcVacuumVis = new G4VisAttributes(G4Color::Green());
   vcVacuumVis->SetVisibility(false);
   logicVcVacuum->SetVisAttributes(vcVacuumVis);
 
   G4RotationMatrix *vcVacuumRotation = new G4RotationMatrix();
-  vcVacuumRotation->rotate(m_cfg.vcRotationAngle, m_cfg.vcRotationAxis);
+  vcVacuumRotation->rotateX(cfg.vcRotationAngleX);
+  vcVacuumRotation->rotateY(cfg.vcRotationAngleY);
+  vcVacuumRotation->rotateZ(cfg.vcRotationAngleZ);
   G4VPhysicalVolume *physVcVacuum = new G4PVPlacement(
       vcVacuumRotation,
-      G4ThreeVector(m_cfg.vcCenterX, m_cfg.vcCenterY, m_cfg.vcCenterZ),
-      logicVcVacuum, "VcVacuum", logicParent, false, 0, m_cfg.checkOverlaps);
+      G4ThreeVector(cfg.vcCenterX, cfg.vcCenterY, cfg.vcCenterZ), logicVcVacuum,
+      cfg.name, logicParent, false, 0, cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // VC walls log/phys construction
@@ -173,7 +181,7 @@ G4VPhysicalVolume *VacuumChamberFactory::construct(G4LogicalVolume *logicParent,
 
   G4VPhysicalVolume *physVcWalls =
       new G4PVPlacement(nullptr, G4ThreeVector(), logicVcWalls, "VcWalls",
-                        logicVcVacuum, false, 0, m_cfg.checkOverlaps);
+                        logicVcVacuum, false, 0, cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // VC doors log/phys construction
@@ -184,11 +192,13 @@ G4VPhysicalVolume *VacuumChamberFactory::construct(G4LogicalVolume *logicParent,
   logicVcDoors->SetVisAttributes(vcexitVis);
 
   G4RotationMatrix *vcDoorsRotation = new G4RotationMatrix();
-  vcDoorsRotation->rotate(-m_cfg.vcRotationAngle, m_cfg.vcRotationAxis);
+  vcDoorsRotation->rotateX(-cfg.vcRotationAngleX);
+  vcDoorsRotation->rotateY(-cfg.vcRotationAngleY);
+  vcDoorsRotation->rotateZ(-cfg.vcRotationAngleZ);
   G4VPhysicalVolume *physVcDoors = new G4PVPlacement(
       vcDoorsRotation,
-      G4ThreeVector(m_cfg.vcCenterX, m_cfg.vcCenterY, m_cfg.vcCenterZ),
-      logicVcDoors, "VcDoors", logicVcVacuum, false, 0, m_cfg.checkOverlaps);
+      G4ThreeVector(cfg.vcCenterX, cfg.vcCenterY, cfg.vcCenterZ), logicVcDoors,
+      "VcDoors", logicVcVacuum, false, 0, cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // VC windows log/phys construction
@@ -198,12 +208,13 @@ G4VPhysicalVolume *VacuumChamberFactory::construct(G4LogicalVolume *logicParent,
   logicVcWindows->SetVisAttributes(vcexitVis);
 
   G4RotationMatrix *vcWindowsRotation = new G4RotationMatrix();
-  vcWindowsRotation->rotate(-m_cfg.vcRotationAngle, m_cfg.vcRotationAxis);
+  vcWindowsRotation->rotateX(-cfg.vcRotationAngleX);
+  vcWindowsRotation->rotateY(-cfg.vcRotationAngleY);
+  vcWindowsRotation->rotateZ(-cfg.vcRotationAngleZ);
   G4VPhysicalVolume *physVcWindows = new G4PVPlacement(
       vcWindowsRotation,
-      G4ThreeVector(m_cfg.vcCenterX, m_cfg.vcCenterY, m_cfg.vcCenterZ),
-      logicVcWindows, "VcWindows", logicVcVacuum, false, 0,
-      m_cfg.checkOverlaps);
+      G4ThreeVector(cfg.vcCenterX, cfg.vcCenterY, cfg.vcCenterZ),
+      logicVcWindows, "VcWindows", logicVcVacuum, false, 0, cfg.checkOverlaps);
 
   // ---------------------------------------------------
   // VC flange log/phys construction
@@ -213,36 +224,39 @@ G4VPhysicalVolume *VacuumChamberFactory::construct(G4LogicalVolume *logicParent,
   logicVcFlangeWindow->SetVisAttributes(vcexitVis);
 
   G4RotationMatrix *vcFlangeRotation = new G4RotationMatrix();
-  vcFlangeRotation->rotate(-m_cfg.vcRotationAngle, m_cfg.vcRotationAxis);
+  vcFlangeRotation->rotateX(-cfg.vcRotationAngleX);
+  vcFlangeRotation->rotateY(-cfg.vcRotationAngleY);
+  vcFlangeRotation->rotateZ(-cfg.vcRotationAngleZ);
   G4VPhysicalVolume *physVcFlangeWindow = new G4PVPlacement(
       vcFlangeRotation,
-      (*vcFlangeRotation).inverse() * G4ThreeVector(m_cfg.vcc->vcFlangeCenterX,
-                                                    m_cfg.vcc->vcFlangeCenterY,
-                                                    m_cfg.vcc->vcFlangeCenterZ),
+      (*vcFlangeRotation).inverse() * G4ThreeVector(cfg.vcc->vcFlangeCenterX,
+                                                    cfg.vcc->vcFlangeCenterY,
+                                                    cfg.vcc->vcFlangeCenterZ),
       logicVcFlangeWindow, "VcFlangeWindow", logicVcVacuum, false, 0,
-      m_cfg.checkOverlaps);
+      cfg.checkOverlaps);
 
   return physVcVacuum;
 }
 
-std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWalls() {
+std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWalls(
+    const Config &cfg) {
   // Construct the cylinder structure
   G4Tubs *solidVcCylinder =
-      new G4Tubs("VcCylinder", m_cfg.vcc->vcCylinderRadMin,
-                 m_cfg.vcc->vcCylinderRadMin + m_cfg.vcc->vcCylinderThickness,
-                 m_cfg.vcc->vcCylinderHalfZ, 0 * rad, 2 * M_PI * rad);
+      new G4Tubs("VcCylinder", cfg.vcc->vcCylinderRadMin,
+                 cfg.vcc->vcCylinderRadMin + cfg.vcc->vcCylinderThickness,
+                 cfg.vcc->vcCylinderHalfZ, 0 * rad, 2 * M_PI * rad);
 
   G4Tubs *solidVcVacuumCylinder =
       new G4Tubs("VcVacuumCylinder", 0,
-                 m_cfg.vcc->vcCylinderRadMin + m_cfg.vcc->vcCylinderThickness,
-                 m_cfg.vcc->vcCylinderHalfZ, 0 * rad, 2 * M_PI * rad);
+                 cfg.vcc->vcCylinderRadMin + cfg.vcc->vcCylinderThickness,
+                 cfg.vcc->vcCylinderHalfZ, 0 * rad, 2 * M_PI * rad);
 
   // Construct cut panels for the outer cylinder wall
-  G4Box *solidVcCylinderCutout = new G4Box(
-      "VcCylinderCutout", m_cfg.vcc->vcCylinderCutoutHalfX,
-      m_cfg.vcc->vcCylinderCutoutHalfY, m_cfg.vcc->vcCylinderCutoutHalfZ);
+  G4Box *solidVcCylinderCutout =
+      new G4Box("VcCylinderCutout", cfg.vcc->vcCylinderCutoutHalfX,
+                cfg.vcc->vcCylinderCutoutHalfY, cfg.vcc->vcCylinderCutoutHalfZ);
   G4ThreeVector vcCylinderCutoutTranslation(
-      0, 0, m_cfg.vcc->vcCylinderRadMin + m_cfg.vcc->vcCylinderThickness);
+      0, 0, cfg.vcc->vcCylinderRadMin + cfg.vcc->vcCylinderThickness);
   G4RotationMatrix vcCylinderCutoutRotation = G4RotationMatrix::IDENTITY;
 
   G4MultiUnion *solidVcCylinderCutoutUnion =
@@ -252,7 +266,7 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWalls() {
         vcCylinderCutoutRotation,
         vcCylinderCutoutRotation * vcCylinderCutoutTranslation);
     solidVcCylinderCutoutUnion->AddNode(solidVcCylinderCutout, cutoutTranform);
-    vcCylinderCutoutRotation.rotateY(m_cfg.vcc->vcExitAngleSpacing);
+    vcCylinderCutoutRotation.rotateY(cfg.vcc->vcExitAngleSpacing);
   }
   solidVcCylinderCutoutUnion->Voxelize();
 
@@ -264,17 +278,17 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWalls() {
       new G4SubtractionSolid("VcCylinderSubtraction", solidVcCylinder,
                              solidVcCylinderCutoutUnion, subtractionTransform);
   G4SubtractionSolid *solidVcVacuum =
-      new G4SubtractionSolid("VcVacuum", solidVcVacuumCylinder,
+      new G4SubtractionSolid(cfg.name, solidVcVacuumCylinder,
                              solidVcCylinderCutoutUnion, subtractionTransform);
 
   // Construct cut panels for the VC exit doors
   G4Box *solidVcDoorCutout =
-      new G4Box("VcDoorCutout", m_cfg.vcc->vcDoorHalfX, m_cfg.vcc->vcDoorHalfY,
-                m_cfg.vcc->vcCylinderThickness * 1.01);
+      new G4Box("VcDoorCutout", cfg.vcc->vcDoorHalfX, cfg.vcc->vcDoorHalfY,
+                cfg.vcc->vcCylinderThickness * 1.01);
   G4ThreeVector vcDoorCutoutTranslation(
       0, 0,
-      (m_cfg.vcc->vcCylinderRadMin + m_cfg.vcc->vcCylinderRadMin +
-       m_cfg.vcc->vcCylinderThickness) /
+      (cfg.vcc->vcCylinderRadMin + cfg.vcc->vcCylinderRadMin +
+       cfg.vcc->vcCylinderThickness) /
           2);
   G4RotationMatrix vcDoorCutoutRotation = G4RotationMatrix::IDENTITY;
 
@@ -283,7 +297,7 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWalls() {
     G4Transform3D cutoutTranform(
         vcDoorCutoutRotation, vcDoorCutoutRotation * vcDoorCutoutTranslation);
     solidVcDoorCutoutUnion->AddNode(solidVcDoorCutout, cutoutTranform);
-    vcDoorCutoutRotation.rotateY(m_cfg.vcc->vcExitAngleSpacing);
+    vcDoorCutoutRotation.rotateY(cfg.vcc->vcExitAngleSpacing);
   }
   solidVcDoorCutoutUnion->Voxelize();
 
@@ -295,14 +309,13 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWalls() {
   return {solidVcWalls, solidVcVacuum};
 }
 
-std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcDoors() {
+std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcDoors(
+    const Config &cfg) {
   // Construct the VC doors
-  G4Box *solidVcDoor =
-      new G4Box("VcDoor", m_cfg.vcc->vcDoorHalfX, m_cfg.vcc->vcDoorHalfY,
-                m_cfg.vcc->vcDoorHalfZ);
-  G4ThreeVector vcDoorTranslation(m_cfg.vcc->vcDoorCenterX,
-                                  m_cfg.vcc->vcDoorCenterY,
-                                  m_cfg.vcc->vcDoorCenterZ);
+  G4Box *solidVcDoor = new G4Box("VcDoor", cfg.vcc->vcDoorHalfX,
+                                 cfg.vcc->vcDoorHalfY, cfg.vcc->vcDoorHalfZ);
+  G4ThreeVector vcDoorTranslation(
+      cfg.vcc->vcDoorCenterX, cfg.vcc->vcDoorCenterY, cfg.vcc->vcDoorCenterZ);
   G4RotationMatrix vcDoorRotation = G4RotationMatrix::IDENTITY;
 
   // Construct union of all the doors in the structure
@@ -311,22 +324,21 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcDoors() {
     G4Transform3D doorTransform(vcDoorRotation,
                                 vcDoorRotation * vcDoorTranslation);
     solidVcDoorUnion->AddNode(solidVcDoor, doorTransform);
-    vcDoorRotation.rotateY(m_cfg.vcc->vcExitAngleSpacing);
+    vcDoorRotation.rotateY(cfg.vcc->vcExitAngleSpacing);
   }
   solidVcDoorUnion->Voxelize();
 
   // Construct the VC window cutout
   G4Tubs *solidVcWindowCutoutBig =
-      new G4Tubs("VcWindowCutoutBig", 0, m_cfg.vcc->bigVcWindowRad,
-                 m_cfg.vcc->vcDoorHalfZ * 1.01, 0 * rad, 2 * M_PI * rad);
+      new G4Tubs("VcWindowCutoutBig", 0, cfg.vcc->bigVcWindowRad,
+                 cfg.vcc->vcDoorHalfZ * 1.01, 0 * rad, 2 * M_PI * rad);
 
   G4Tubs *solidVcWindowCutoutSmall =
-      new G4Tubs("VcWindowCutoutSmall", 0, m_cfg.vcc->smallVcWindowRad,
-                 m_cfg.vcc->vcDoorHalfZ * 1.01, 0 * rad, 2 * M_PI * rad);
+      new G4Tubs("VcWindowCutoutSmall", 0, cfg.vcc->smallVcWindowRad,
+                 cfg.vcc->vcDoorHalfZ * 1.01, 0 * rad, 2 * M_PI * rad);
 
-  G4ThreeVector vcWindowCutoutTranslation(m_cfg.vcc->vcDoorCenterX,
-                                          m_cfg.vcc->vcDoorCenterY,
-                                          m_cfg.vcc->vcDoorCenterZ);
+  G4ThreeVector vcWindowCutoutTranslation(
+      cfg.vcc->vcDoorCenterX, cfg.vcc->vcDoorCenterY, cfg.vcc->vcDoorCenterZ);
   G4RotationMatrix vcWindowCutoutRotation = G4RotationMatrix::IDENTITY;
 
   G4MultiUnion *solidVcWindowCutoutUnion =
@@ -342,7 +354,7 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcDoors() {
       solidVcWindowCutoutUnion->AddNode(solidVcWindowCutoutSmall,
                                         windowTransform);
     }
-    vcWindowCutoutRotation.rotateY(m_cfg.vcc->vcExitAngleSpacing);
+    vcWindowCutoutRotation.rotateY(cfg.vcc->vcExitAngleSpacing);
   }
   solidVcWindowCutoutUnion->Voxelize();
 
@@ -353,19 +365,20 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcDoors() {
   return {solidVcDoors, solidVcDoorUnion};
 }
 
-std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWindows() {
+std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWindows(
+    const Config &cfg) {
   // Construct VC windows
   G4Tubs *solidVcWindowBig =
-      new G4Tubs("VcWindowBig", 0, m_cfg.vcc->bigVcWindowRad,
-                 m_cfg.vcc->vcWindowHalfZ, 0 * rad, 2 * M_PI * rad);
+      new G4Tubs("VcWindowBig", 0, cfg.vcc->bigVcWindowRad,
+                 cfg.vcc->vcWindowHalfZ, 0 * rad, 2 * M_PI * rad);
 
   G4Tubs *solidVcWindowSmall =
-      new G4Tubs("VcWindowSmall", 0, m_cfg.vcc->smallVcWindowRad,
-                 m_cfg.vcc->vcWindowHalfZ, 0 * rad, 2 * M_PI * rad);
+      new G4Tubs("VcWindowSmall", 0, cfg.vcc->smallVcWindowRad,
+                 cfg.vcc->vcWindowHalfZ, 0 * rad, 2 * M_PI * rad);
 
-  G4ThreeVector vcWindowTranslation(m_cfg.vcc->vcWindowCenterX,
-                                    m_cfg.vcc->vcWindowCenterY,
-                                    m_cfg.vcc->vcWindowCenterZ);
+  G4ThreeVector vcWindowTranslation(cfg.vcc->vcWindowCenterX,
+                                    cfg.vcc->vcWindowCenterY,
+                                    cfg.vcc->vcWindowCenterZ);
   G4RotationMatrix vcWindowRotation = G4RotationMatrix::IDENTITY;
 
   G4MultiUnion *solidVcWindowUnion = new G4MultiUnion("VcWindowUnion");
@@ -377,14 +390,14 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWindows() {
     } else {
       solidVcWindowUnion->AddNode(solidVcWindowSmall, windowTransform);
     }
-    vcWindowRotation.rotateY(m_cfg.vcc->vcExitAngleSpacing);
+    vcWindowRotation.rotateY(cfg.vcc->vcExitAngleSpacing);
   }
   solidVcWindowUnion->Voxelize();
 
   // Construct VC window flange cutout
   G4Tubs *solidVcFlangeCutout =
-      new G4Tubs("VcFlangeCutout", 0, m_cfg.vcc->vcFlangeRad,
-                 m_cfg.vcc->vcWindowHalfZ * 1.01, 0 * rad, 2 * M_PI * rad);
+      new G4Tubs("VcFlangeCutout", 0, cfg.vcc->vcFlangeRad,
+                 cfg.vcc->vcWindowHalfZ * 1.01, 0 * rad, 2 * M_PI * rad);
 
   // Cut the windows in the doors
   G4RotationMatrix subtractionRotation = G4RotationMatrix::IDENTITY;
@@ -396,26 +409,27 @@ std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcWindows() {
   return {solidVcWindows, solidVcWindowUnion};
 }
 
-std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcFlange() {
+std::pair<G4VSolid *, G4VSolid *> VacuumChamberFactory::constructVcFlange(
+    const Config &cfg) {
   // ---------------------------------------------------
   // Vacuum exit flange construction
 
   // Construct VC flange
   G4Tubs *solidVcFlange =
-      new G4Tubs("VcFlange", 0, m_cfg.vcc->vcFlangeRad,
-                 m_cfg.vcc->vcFlangeHalfZ, 0 * rad, 2 * M_PI * rad);
+      new G4Tubs("VcFlange", 0, cfg.vcc->vcFlangeRad, cfg.vcc->vcFlangeHalfZ,
+                 0 * rad, 2 * M_PI * rad);
 
   // Construct VC window flange cutout
-  G4Box *solidVcFlangeFlangeCutout = new G4Box(
-      "solidVcFlangeCutout", m_cfg.vcc->vcFlangeWindowHalfX,
-      m_cfg.vcc->vcFlangeWindowHalfY,
-      2 * (m_cfg.vcc->vcFlangeHalfZ - m_cfg.vcc->vcFlangeWindowHalfZ));
+  G4Box *solidVcFlangeFlangeCutout =
+      new G4Box("solidVcFlangeCutout", cfg.vcc->vcFlangeWindowHalfX,
+                cfg.vcc->vcFlangeWindowHalfY,
+                2 * (cfg.vcc->vcFlangeHalfZ - cfg.vcc->vcFlangeWindowHalfZ));
 
   // Cut the exit window in the flange
   G4RotationMatrix subtractionRotation = G4RotationMatrix::IDENTITY;
   subtractionRotation.rotateZ(M_PI_4);
   G4Transform3D subtractionTransform(
-      subtractionRotation, G4ThreeVector(0, 0, -m_cfg.vcc->vcFlangeHalfZ));
+      subtractionRotation, G4ThreeVector(0, 0, -cfg.vcc->vcFlangeHalfZ));
   G4SubtractionSolid *solidVcFlangeMilled =
       new G4SubtractionSolid("VcFlangeMilled", solidVcFlange,
                              solidVcFlangeFlangeCutout, subtractionTransform);

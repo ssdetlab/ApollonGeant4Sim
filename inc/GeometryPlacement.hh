@@ -31,8 +31,9 @@ struct GeometryPlacement {
   G4double vcCenterZ;
 
   /// VC rotation parameters in the World frame
-  G4double vcRotationAngle;
-  G4ThreeVector vcRotationAxis;
+  G4double vcRotationAngleX;
+  G4double vcRotationAngleY;
+  G4double vcRotationAngleZ;
 
   /// ---------------------------------------------------
   /// Tracking chamber 1
@@ -45,8 +46,9 @@ struct GeometryPlacement {
   G4double tc1CenterY;
   G4double tc1CenterZ;
 
-  G4ThreeVector tc1RotationAxis;
-  G4double tc1RotationAngle;
+  G4double tc1RotationAngleX;
+  G4double tc1RotationAngleY;
+  G4double tc1RotationAngleZ;
 
   /// ---------------------------------------------------
   /// Dipole
@@ -61,8 +63,9 @@ struct GeometryPlacement {
   G4double wdCenterZ;
 
   /// Dipole rotation parameters in the World frame
-  G4double wdRotationAngle;
-  G4ThreeVector wdRotationAxis;
+  G4double wdRotationAngleX;
+  G4double wdRotationAngleY;
+  G4double wdRotationAngleZ;
 
   /// ---------------------------------------------------
   /// Tracking chamber 2
@@ -75,20 +78,37 @@ struct GeometryPlacement {
   G4double tc2CenterY;
   G4double tc2CenterZ;
 
-  G4ThreeVector tc2RotationAxis;
-  G4double tc2RotationAngle;
+  G4double tc2RotationAngleX;
+  G4double tc2RotationAngleY;
+  G4double tc2RotationAngleZ;
 
   /// ---------------------------------------------------
-  /// Breadboard
+  /// Angled breadboard
 
-  std::string bbName;
+  std::string bb1Name;
 
-  G4double bbCenterX;
-  G4double bbCenterY;
-  G4double bbCenterZ;
+  G4double bb1RotationAngleX;
+  G4double bb1RotationAngleY;
+  G4double bb1RotationAngleZ;
 
-  G4ThreeVector bbRotationAxis;
-  G4double bbRotationAngle;
+  /// ---------------------------------------------------
+  /// Support breadboard
+
+  std::string bb2Name;
+
+  G4double bb2RotationAngleX;
+  G4double bb2RotationAngleY;
+  G4double bb2RotationAngleZ;
+
+  /// ---------------------------------------------------
+  /// Breadboard mount
+
+  std::string bm1Name;
+  std::string bm2Name;
+
+  G4double bmRotationAngleX;
+  G4double bmRotationAngleY;
+  G4double bmRotationAngleZ;
 
  protected:
   static GeometryPlacement* m_instance;

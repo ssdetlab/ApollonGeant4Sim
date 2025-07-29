@@ -89,14 +89,18 @@ struct VacuumChamber {
 class VacuumChamberFactory {
  public:
   struct Config {
+    /// VC instance name
+    std::string name;
+
     /// VC position in the World
     G4double vcCenterX;
     G4double vcCenterY;
     G4double vcCenterZ;
 
     /// VC rotation parameters in the World frame
-    G4ThreeVector vcRotationAxis;
-    G4double vcRotationAngle;
+    G4double vcRotationAngleX;
+    G4double vcRotationAngleY;
+    G4double vcRotationAngleZ;
 
     /// VC parameters
     const GeometryConstants::VacuumChamber *vcc;
@@ -104,22 +108,19 @@ class VacuumChamberFactory {
     bool checkOverlaps;
   };
 
-  VacuumChamberFactory(const Config &cfg) : m_cfg(cfg) {};
+  VacuumChamberFactory() = default;
   ~VacuumChamberFactory() = default;
 
-  G4VPhysicalVolume *construct(G4LogicalVolume *logicParent,
-                               const std::string &name);
+  G4VPhysicalVolume *construct(G4LogicalVolume *logicParent, const Config &cfg);
 
  private:
-  std::pair<G4VSolid *, G4VSolid *> constructVcWalls();
+  std::pair<G4VSolid *, G4VSolid *> constructVcWalls(const Config &cfg);
 
-  std::pair<G4VSolid *, G4VSolid *> constructVcDoors();
+  std::pair<G4VSolid *, G4VSolid *> constructVcDoors(const Config &cfg);
 
-  std::pair<G4VSolid *, G4VSolid *> constructVcWindows();
+  std::pair<G4VSolid *, G4VSolid *> constructVcWindows(const Config &cfg);
 
-  std::pair<G4VSolid *, G4VSolid *> constructVcFlange();
-
-  Config m_cfg;
+  std::pair<G4VSolid *, G4VSolid *> constructVcFlange(const Config &cfg);
 };
 
 #endif

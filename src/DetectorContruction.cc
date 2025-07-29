@@ -94,6 +94,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       .wdRotationAngleZ =
           gc::GeometryPlacement::instance()->wdRotationAngleZ - angle,
 
+      .angle = angle,
+
       .wdc = gc::WendellDipole::instance(),
 
       .checkOverlaps = true};

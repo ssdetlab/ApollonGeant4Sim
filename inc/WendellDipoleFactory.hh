@@ -92,6 +92,8 @@ class WendellDipoleFactory {
     G4double wdRotationAngleY;
     G4double wdRotationAngleZ;
 
+    G4double angle;
+
     /// Dipole parameters
     const GeometryConstants::WendellDipole *wdc;
 

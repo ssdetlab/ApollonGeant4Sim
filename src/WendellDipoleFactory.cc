@@ -276,7 +276,9 @@ G4VPhysicalVolume *WendellDipoleFactory::construct(G4LogicalVolume *logicParent,
   // ---------------------------------------------------
   // Magnetic field volume construction
 
-  G4UniformMagField *dipoleField = new G4UniformMagField(cfg.wdc->dipoleField);
+  G4RotationMatrix fieldRotation = G4RotationMatrix::IDENTITY;
+  fieldRotation.rotateY(cfg.angle);
+  G4UniformMagField *dipoleField = new G4UniformMagField(fieldRotation * cfg.wdc->dipoleField);
   G4FieldManager *dipoleFieldMgr = new G4FieldManager(dipoleField);
 
   G4Box *solidMagFieldVolume =

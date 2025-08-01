@@ -5,7 +5,6 @@
 #include <string>
 
 #include "G4SystemOfUnits.hh"
-#include "G4ThreeVector.hh"
 #include "G4Types.hh"
 
 namespace GeometryConstants {

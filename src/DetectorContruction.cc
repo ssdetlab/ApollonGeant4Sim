@@ -1,11 +1,7 @@
-#include <cstddef>
-#include <string>
-
 #include "BreadboardFactory.hh"
 #include "BreadboardMountFactory.hh"
 #include "DetectorConstruction.hh"
 #include "G4Box.hh"
-#include "G4FieldManager.hh"
 #include "G4LogicalVolume.hh"
 #include "G4NistManager.hh"
 #include "G4PVPlacement.hh"
@@ -13,14 +9,11 @@
 #include "G4Region.hh"
 #include "G4RotationMatrix.hh"
 #include "G4SDManager.hh"
-#include "G4Sphere.hh"
 #include "G4ThreeVector.hh"
 #include "G4Transform3D.hh"
 #include "G4TransportationManager.hh"
 #include "G4Tubs.hh"
-#include "G4UniformMagField.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4VisAttributes.hh"
 #include "GeometryPlacement.hh"
 #include "MaterialFactory.hh"
 #include "SamplingVolume.hh"
@@ -113,15 +106,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   const auto &magFieldVolumeObject = wdSearchScene.GetFindings().at(0);
   G4ThreeVector magFieldVolumeTranslation =
       magFieldVolumeObject.fFoundObjectTransformation.getTranslation();
-
-  // G4RotationMatrix rotm;
-  // rotm.rotateZ(M_PI_4);
-  // magFieldVolumeTranslation =
-  //     rotm * *physWendellDipole->GetRotation() * magFieldVolumeTranslation;
   physWendellDipole->SetTranslation(
-      // G4ThreeVector(-magFieldVolumeTranslation.x(),
-      //               -magFieldVolumeTranslation.y(),
-      //               physWendellDipole->GetTranslation().z()) +
       G4ThreeVector(magFieldVolumeTranslation.x(),
                     -magFieldVolumeTranslation.z(),
                     physWendellDipole->GetTranslation().z()) +
@@ -133,9 +118,6 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
   // ---------------------------------------------------
   // First tracking chamber construction
-
-  G4RotationMatrix rotm2;
-  rotm2.rotateZ(M_PI_2);
 
   TrackingChamberFactory tcFactory;
 
@@ -168,16 +150,13 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   G4ThreeVector opppSensitiveTranslation1 =
       opppObject1.fFoundObjectTransformation.getTranslation();
 
-  // G4RotationMatrix translationRot1 = G4RotationMatrix::IDENTITY;
-  // translationRot1.rotateX(gc::GeometryPlacement::instance()->tc1RotationAngleX);
-  // translationRot1.rotateY(gc::GeometryPlacement::instance()->tc1RotationAngleY);
-  // translationRot1.rotateZ(gc::GeometryPlacement::instance()->tc1RotationAngleZ);
-  // opppSensitiveTranslation1 = translationRot1 * opppSensitiveTranslation1;
-  opppSensitiveTranslation1 = rotm2 * opppSensitiveTranslation1;
+  G4RotationMatrix rotm1;
+  rotm1.rotateX(gc::GeometryPlacement::instance()->tc1RotationAngleX);
+  rotm1.rotateY(gc::GeometryPlacement::instance()->tc1RotationAngleY);
+  rotm1.rotateZ(gc::GeometryPlacement::instance()->tc1RotationAngleZ);
+
+  opppSensitiveTranslation1 = rotm1 * opppSensitiveTranslation1;
   physTrackingChamber1->SetTranslation(
-      // G4ThreeVector(-opppSensitiveTranslation1.x(),
-      //               -opppSensitiveTranslation1.y(),
-      //               physTrackingChamber1->GetTranslation().z()) +
       G4ThreeVector(opppSensitiveTranslation1.x(),
                     opppSensitiveTranslation1.y(),
                     physTrackingChamber1->GetTranslation().z()) +
@@ -219,16 +198,13 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   G4ThreeVector opppSensitiveTranslation2 =
       opppObject2.fFoundObjectTransformation.getTranslation();
 
-  // G4RotationMatrix translationRot2 = G4RotationMatrix::IDENTITY;
-  // translationRot2.rotateX(gc::GeometryPlacement::instance()->tc2RotationAngleX);
-  // translationRot2.rotateY(gc::GeometryPlacement::instance()->tc2RotationAngleY);
-  // translationRot2.rotateZ(gc::GeometryPlacement::instance()->tc2RotationAngleZ);
-  // opppSensitiveTranslation2 = translationRot2 * opppSensitiveTranslation2;
-  opppSensitiveTranslation2 = rotm2 * opppSensitiveTranslation2;
+  G4RotationMatrix rotm2;
+  rotm2.rotateX(gc::GeometryPlacement::instance()->tc2RotationAngleX);
+  rotm2.rotateY(gc::GeometryPlacement::instance()->tc2RotationAngleY);
+  rotm2.rotateZ(gc::GeometryPlacement::instance()->tc2RotationAngleZ);
+
+  opppSensitiveTranslation2 = rotm1 * opppSensitiveTranslation2;
   physTrackingChamber2->SetTranslation(
-      // G4ThreeVector(-opppSensitiveTranslation2.x(),
-      //               -opppSensitiveTranslation2.y(),
-      //               physTrackingChamber2->GetTranslation().z()) +
       G4ThreeVector(opppSensitiveTranslation2.x(),
                     opppSensitiveTranslation2.y(),
                     physTrackingChamber2->GetTranslation().z()) +
@@ -389,10 +365,10 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 }
 
 void DetectorConstruction::ConstructSDandField() {
-  // G4String senstitiveName = "/logicAlpideSensitive";
-  // auto samplingVolume = new SamplingVolume(senstitiveName, "HitsCollection",
-  //                                          "ProtoTrckCarrierPCB");
-  // G4SDManager::GetSDMpointer()->AddNewDetector(samplingVolume);
-  // SetSensitiveDetector("logicAlpideSensitive", samplingVolume, true);
-  // SetSensitiveDetector("VcExitSampling", samplingVolume, true);
+  G4String senstitiveName = "/logicAlpideSensitive";
+  auto samplingVolume = new SamplingVolume(senstitiveName, "HitsCollection",
+                                           "ProtoTrckCarrierPCB");
+  G4SDManager::GetSDMpointer()->AddNewDetector(samplingVolume);
+  SetSensitiveDetector("logicAlpideSensitive", samplingVolume, true);
+  SetSensitiveDetector("VcExitSampling", samplingVolume, true);
 }

@@ -83,11 +83,16 @@ void Run::RecordEvent(const G4Event* event) {
       m_trackId.push_back(hit->GetTrackId());
       m_pdgId.push_back(hit->GetPdgId());
 
-      m_pos.push_back(hit->GetPos());
-      m_vertex.push_back(hit->GetVertex());
+      m_pos.push_back(
+          TVector3(hit->GetPos().x(), hit->GetPos().y(), hit->GetPos().z()));
+      m_vertex.push_back(TVector3(hit->GetVertex().x(), hit->GetVertex().y(),
+                                  hit->GetVertex().z()));
 
-      m_momDir.push_back(hit->GetMomDir());
-      m_momDirIP.push_back(hit->GetMomDirIP());
+      m_momDir.push_back(TVector3(hit->GetMomDir().x(), hit->GetMomDir().y(),
+                                  hit->GetMomDir().z()));
+      m_momDirIP.push_back(TVector3(hit->GetMomDirIP().x(),
+                                    hit->GetMomDirIP().y(),
+                                    hit->GetMomDirIP().z()));
 
       m_eDep.push_back(hit->GetEDep());
       m_eTot.push_back(hit->GetETot());

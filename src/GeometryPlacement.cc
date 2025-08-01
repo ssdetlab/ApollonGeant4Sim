@@ -37,7 +37,6 @@ GeometryPlacement::GeometryPlacement() {
 
   tc1RotationAngleX = 0;
   tc1RotationAngleY = 0;
-  // tc1RotationAngleZ = 3 * M_PI_4;
   tc1RotationAngleZ = M_PI_2;
 
   /// ---------------------------------------------------
@@ -56,7 +55,6 @@ GeometryPlacement::GeometryPlacement() {
 
   /// Dipole rotation parameters in the World frame
   wdRotationAngleX = M_PI_2 * rad;
-  // wdRotationAngleY = -M_PI_4 * rad;
   wdRotationAngleY = 0;
   wdRotationAngleZ = M_PI_2 * rad;
 
@@ -74,7 +72,6 @@ GeometryPlacement::GeometryPlacement() {
 
   tc2RotationAngleX = 0;
   tc2RotationAngleY = 0;
-  // tc2RotationAngleZ = 3 * M_PI_4;
   tc2RotationAngleZ = M_PI_2;
 
   /// ---------------------------------------------------

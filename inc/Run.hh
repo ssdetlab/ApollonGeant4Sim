@@ -2,9 +2,9 @@
 #define Run_h
 
 #include "G4Run.hh"
-#include "G4ThreeVector.hh"
 #include "TFile.h"
 #include "TTree.h"
+#include "TVector3.h"
 
 class Run : public G4Run {
  public:
@@ -19,20 +19,20 @@ class Run : public G4Run {
   TFile* m_file = nullptr;
   TTree* m_tree = nullptr;
 
-  std::vector<G4int> m_geoId;
+  std::vector<int> m_geoId;
 
-  std::vector<G4int> m_trackId;
-  std::vector<G4int> m_pdgId;
+  std::vector<int> m_trackId;
+  std::vector<int> m_pdgId;
 
-  std::vector<G4ThreeVector> m_pos;
-  std::vector<G4ThreeVector> m_vertex;
+  std::vector<TVector3> m_pos;
+  std::vector<TVector3> m_vertex;
 
-  std::vector<G4ThreeVector> m_momDir;
-  std::vector<G4ThreeVector> m_momDirIP;
+  std::vector<TVector3> m_momDir;
+  std::vector<TVector3> m_momDirIP;
 
-  std::vector<G4double> m_eDep;
-  std::vector<G4double> m_eTot;
-  std::vector<G4double> m_eIP;
+  std::vector<double> m_eDep;
+  std::vector<double> m_eTot;
+  std::vector<double> m_eIP;
 };
 
 #endif

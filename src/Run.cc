@@ -45,6 +45,7 @@ void Run::RecordEvent(const G4Event* event) {
   m_trackId.clear();
   m_pdgId.clear();
 
+  m_hitPosLocal.clear();
   m_hitPosGlobal.clear();
   m_vertex.clear();
 
@@ -69,6 +70,7 @@ void Run::RecordEvent(const G4Event* event) {
     m_trackId.reserve(hcSize);
     m_pdgId.reserve(hcSize);
 
+    m_hitPosLocal.reserve(hcSize);
     m_hitPosGlobal.reserve(hcSize);
     m_vertex.reserve(hcSize);
 

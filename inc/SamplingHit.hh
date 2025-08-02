@@ -4,6 +4,7 @@
 #include "G4Allocator.hh"
 #include "G4THitsCollection.hh"
 #include "G4ThreeVector.hh"
+#include "G4TwoVector.hh"
 #include "G4VHit.hh"
 #include "tls.hh"
 
@@ -30,7 +31,8 @@ class SamplingHit : public G4VHit {
   void SetTrackId(G4int track) { m_trackId = track; };
   void SetPdgId(G4int id) { m_pdgId = id; };
 
-  void SetPos(G4ThreeVector xyz) { m_pos = xyz; };
+  void SetHitPosGlobal(G4ThreeVector xyz) { m_hitPosGlobal = xyz; };
+  void SetHitPosLocal(G4TwoVector xy) { m_hitPosLocal = xy; };
   void SetVertex(G4ThreeVector xyz) { m_vertex = xyz; };
 
   void SetMomDir(G4ThreeVector xyz) { m_momDir = xyz; };
@@ -46,7 +48,8 @@ class SamplingHit : public G4VHit {
   G4int GetTrackId() const { return m_trackId; };
   G4int GetPdgId() const { return m_pdgId; };
 
-  G4ThreeVector GetPos() const { return m_pos; };
+  G4ThreeVector GetHitPosGlobal() const { return m_hitPosGlobal; };
+  G4ThreeVector GetHitPosLocal() const { return m_hitPosLocal; };
   G4ThreeVector GetVertex() const { return m_vertex; };
 
   G4ThreeVector GetMomDir() const { return m_momDir; };
@@ -62,7 +65,8 @@ class SamplingHit : public G4VHit {
   G4int m_trackId = -1;
   G4int m_pdgId = -1;
 
-  G4ThreeVector m_pos;
+  G4ThreeVector m_hitPosGlobal;
+  G4TwoVector m_hitPosLocal;
   G4ThreeVector m_vertex;
 
   G4ThreeVector m_momDir;

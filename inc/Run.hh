@@ -4,6 +4,7 @@
 #include "G4Run.hh"
 #include "TFile.h"
 #include "TTree.h"
+#include "TVector2.h"
 #include "TVector3.h"
 
 class Run : public G4Run {
@@ -24,7 +25,8 @@ class Run : public G4Run {
   std::vector<int> m_trackId;
   std::vector<int> m_pdgId;
 
-  std::vector<TVector3> m_pos;
+  std::vector<TVector3> m_hitPosGlobal;
+  std::vector<TVector2> m_hitPosLocal;
   std::vector<TVector3> m_vertex;
 
   std::vector<TVector3> m_momDir;

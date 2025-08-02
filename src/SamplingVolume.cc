@@ -1,10 +1,11 @@
 #include "SamplingVolume.hh"
 
-#include <G4String.hh>
+#include <G4RotationMatrix.hh>
 
 #include "G4HCofThisEvent.hh"
 #include "G4SDManager.hh"
 #include "G4Step.hh"
+#include "G4String.hh"
 #include "G4ThreeVector.hh"
 #include "G4ios.hh"
 
@@ -32,10 +33,12 @@ G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   const auto& touchable = aStep->GetTrack()->GetTouchableHandle();
   const auto* history = touchable->GetHistory();
   for (std::size_t i = 0; i < touchable->GetHistoryDepth(); i++) {
-    if (history->GetVolume(i)->GetName().find("TrackingChamber1") != std::string::npos) {
+    if (history->GetVolume(i)->GetName().find("TrackingChamber1") !=
+        std::string::npos) {
       id = 10;
     }
-    if (history->GetVolume(i)->GetName().find("TrackingChamber2") != std::string::npos) {
+    if (history->GetVolume(i)->GetName().find("TrackingChamber2") !=
+        std::string::npos) {
       id = 20;
     }
     if (history->GetVolume(i)->GetName() == m_indexedVolumeName) {
@@ -49,7 +52,12 @@ G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   newHit->SetPdgId(
       aStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding());
 
-  newHit->SetPos(aStep->GetPostStepPoint()->GetPosition());
+  G4ThreeVector origin = touchable->GetTranslation();
+  G4RotationMatrix rotation = *touchable->GetRotation();
+  G4ThreeVector hitGlobal = aStep->GetPostStepPoint()->GetPosition();
+  G4ThreeVector hitLocal = rotation.inverse() * (hitGlobal - origin);
+  newHit->SetHitPosGlobal(hitGlobal);
+  newHit->SetHitPosLocal({hitLocal.x(), hitLocal.y()});
   newHit->SetVertex(aStep->GetTrack()->GetVertexPosition());
 
   newHit->SetMomDir(aStep->GetTrack()->GetMomentumDirection());

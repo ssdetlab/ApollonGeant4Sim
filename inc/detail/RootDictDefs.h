@@ -1,9 +1,15 @@
 #pragma once
 
 #include <vector>
-#include "G4ThreeVector.hh"
+
+#include "TVector2.h"
+#include "TVector3.h"
 
 namespace DictDummies {
-  using threeVector = G4ThreeVector;
-  using vectorThreeVector = std::vector<G4ThreeVector>;
-}
+
+using twoVector = TVector2;
+using vectorTwoVector = std::vector<TVector2>;
+using threeVector = TVector3;
+using vectorThreeVector = std::vector<TVector3>;
+
+}  // namespace DictDummies

@@ -17,7 +17,7 @@ G4bool SamplingHit::operator==(const SamplingHit& right) const {
 void SamplingHit::Draw() {
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if (pVVisManager) {
-    G4Circle circle(m_pos);
+    G4Circle circle(m_hitPosGlobal);
     circle.SetScreenSize(4.);
     circle.SetFillStyle(G4Circle::filled);
     G4Colour colour(1., 0., 0.);
@@ -30,6 +30,6 @@ void SamplingHit::Draw() {
 void SamplingHit::Print() {
   G4cout << "  trackID: " << m_trackId << " PDG ID: " << m_pdgId
          << "Edep: " << std::setw(7) << G4BestUnit(m_eDep, "Energy")
-         << " Position: " << std::setw(7) << G4BestUnit(m_pos, "Length")
+         << " Position: " << std::setw(7) << G4BestUnit(m_hitPosGlobal, "Length")
          << G4endl;
 }

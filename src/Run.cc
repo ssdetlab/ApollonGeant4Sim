@@ -11,20 +11,24 @@ Run::Run(const std::string& filePath, const std::string& treeName) {
   m_file = new TFile(filePath.c_str(), "RECREATE");
   m_tree = new TTree(treeName.c_str(), treeName.c_str());
 
-  m_tree->Branch("geoId", &m_geoId);
+  int bufSize = 32000;
+  int splitLvl = 0;
 
-  m_tree->Branch("trackId", &m_trackId);
-  m_tree->Branch("pdgId", &m_pdgId);
+  m_tree->Branch("geoId", &m_geoId, bufSize, splitLvl);
 
-  m_tree->Branch("pos", &m_pos);
-  m_tree->Branch("vertex", &m_vertex);
+  m_tree->Branch("trackId", &m_trackId, bufSize, splitLvl);
+  m_tree->Branch("pdgId", &m_pdgId, bufSize, splitLvl);
 
-  m_tree->Branch("momDir", &m_momDir);
-  m_tree->Branch("momDirIP", &m_momDirIP);
+  m_tree->Branch("hitPosGlobal", &m_hitPosGlobal, bufSize, splitLvl);
+  m_tree->Branch("hitPosLocal", &m_hitPosLocal, bufSize, splitLvl);
+  m_tree->Branch("vertex", &m_vertex, bufSize, splitLvl);
 
-  m_tree->Branch("eDep", &m_eDep);
-  m_tree->Branch("eTot", &m_eTot);
-  m_tree->Branch("eIP", &m_eIP);
+  m_tree->Branch("momDir", &m_momDir, bufSize, splitLvl);
+  m_tree->Branch("momDirIP", &m_momDirIP, bufSize, splitLvl);
+
+  m_tree->Branch("eDep", &m_eDep, bufSize, splitLvl);
+  m_tree->Branch("eTot", &m_eTot, bufSize, splitLvl);
+  m_tree->Branch("eIP", &m_eIP, bufSize, splitLvl);
 }
 
 Run::~Run() {
@@ -41,7 +45,7 @@ void Run::RecordEvent(const G4Event* event) {
   m_trackId.clear();
   m_pdgId.clear();
 
-  m_pos.clear();
+  m_hitPosGlobal.clear();
   m_vertex.clear();
 
   m_momDir.clear();
@@ -65,7 +69,7 @@ void Run::RecordEvent(const G4Event* event) {
     m_trackId.reserve(hcSize);
     m_pdgId.reserve(hcSize);
 
-    m_pos.reserve(hcSize);
+    m_hitPosGlobal.reserve(hcSize);
     m_vertex.reserve(hcSize);
 
     m_momDir.reserve(hcSize);
@@ -83,8 +87,12 @@ void Run::RecordEvent(const G4Event* event) {
       m_trackId.push_back(hit->GetTrackId());
       m_pdgId.push_back(hit->GetPdgId());
 
-      m_pos.push_back(
-          TVector3(hit->GetPos().x(), hit->GetPos().y(), hit->GetPos().z()));
+      m_hitPosGlobal.push_back(TVector3(hit->GetHitPosGlobal().x(),
+                                        hit->GetHitPosGlobal().y(),
+                                        hit->GetHitPosGlobal().z()));
+      m_hitPosLocal.push_back(
+          TVector2(hit->GetHitPosLocal().x(), hit->GetHitPosLocal().y()));
+
       m_vertex.push_back(TVector3(hit->GetVertex().x(), hit->GetVertex().y(),
                                   hit->GetVertex().z()));
 

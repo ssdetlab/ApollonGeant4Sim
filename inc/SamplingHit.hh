@@ -21,14 +21,15 @@ class SamplingHit : public G4VHit {
   inline void* operator new(size_t);
   inline void operator delete(void*);
 
-  /// methods from base class
+  /// Methods from base class
   void Draw() override;
   void Print() override;
 
   /// Set methods
   void SetGeometryId(G4int id) { m_geoId = id; };
 
-  void SetTrackId(G4int track) { m_trackId = track; };
+  void SetParentTrackId(G4int id) { m_parentTrackId = id; };
+  void SetTrackId(G4int id) { m_trackId = id; };
   void SetPdgId(G4int id) { m_pdgId = id; };
 
   void SetHitPosGlobal(G4ThreeVector xyz) { m_hitPosGlobal = xyz; };
@@ -45,11 +46,12 @@ class SamplingHit : public G4VHit {
   /// Get methods
   G4int GetGeometryId() const { return m_geoId; };
 
+  G4int GetParentTrackId() const { return m_parentTrackId; };
   G4int GetTrackId() const { return m_trackId; };
   G4int GetPdgId() const { return m_pdgId; };
 
   G4ThreeVector GetHitPosGlobal() const { return m_hitPosGlobal; };
-  G4ThreeVector GetHitPosLocal() const { return m_hitPosLocal; };
+  G4TwoVector GetHitPosLocal() const { return m_hitPosLocal; };
   G4ThreeVector GetVertex() const { return m_vertex; };
 
   G4ThreeVector GetMomDir() const { return m_momDir; };
@@ -62,6 +64,7 @@ class SamplingHit : public G4VHit {
  private:
   G4int m_geoId = -1;
 
+  G4int m_parentTrackId = -1;
   G4int m_trackId = -1;
   G4int m_pdgId = -1;
 

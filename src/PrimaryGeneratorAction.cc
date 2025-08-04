@@ -27,7 +27,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(int nParticles,
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
-  m_particleGun->SetParticlePosition(G4ThreeVector(0, -14, 1200));
+  m_particleGun->SetParticlePosition(G4ThreeVector());
 
   auto normal = std::normal_distribution<>(0, 1);
   auto uniform = std::uniform_real_distribution<>(0, 1);

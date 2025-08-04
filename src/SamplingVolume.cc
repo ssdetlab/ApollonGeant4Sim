@@ -48,9 +48,11 @@ G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   }
   newHit->SetGeometryId(id);
 
-  newHit->SetTrackId(aStep->GetTrack()->GetTrackID());
-  newHit->SetPdgId(
-      aStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding());
+  G4Track* track = aStep->GetTrack();
+
+  newHit->SetParentTrackId(track->GetParentID());
+  newHit->SetTrackId(track->GetTrackID());
+  newHit->SetPdgId(track->GetParticleDefinition()->GetPDGEncoding());
 
   G4ThreeVector origin = touchable->GetTranslation();
   G4RotationMatrix rotation = *touchable->GetRotation();
@@ -58,14 +60,17 @@ G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   G4ThreeVector hitLocal = rotation.inverse() * (hitGlobal - origin);
   newHit->SetHitPosGlobal(hitGlobal);
   newHit->SetHitPosLocal({hitLocal.x(), hitLocal.y()});
-  newHit->SetVertex(aStep->GetTrack()->GetVertexPosition());
 
-  newHit->SetMomDir(aStep->GetTrack()->GetMomentumDirection());
-  newHit->SetMomDirIP(aStep->GetTrack()->GetVertexMomentumDirection());
+  newHit->SetMomDir(track->GetMomentumDirection());
+  newHit->SetMomDirIP(track->GetVertexMomentumDirection());
+  newHit->SetVertex(track->GetVertexPosition());
 
   newHit->SetEDep(aStep->GetTotalEnergyDeposit());
-  newHit->SetETot(aStep->GetTrack()->GetTotalEnergy());
-  newHit->SetEIP(aStep->GetTrack()->GetVertexKineticEnergy());
+  newHit->SetETot(track->GetTotalEnergy());
+  newHit->SetEIP(std::sqrt(track->GetVertexKineticEnergy() *
+                               track->GetVertexKineticEnergy() +
+                           track->GetParticleDefinition()->GetPDGMass() *
+                               track->GetParticleDefinition()->GetPDGMass()));
 
   m_hitsCollection->insert(newHit);
 

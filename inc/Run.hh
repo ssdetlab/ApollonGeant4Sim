@@ -15,26 +15,29 @@ class Run : public G4Run {
   void RecordEvent(const G4Event*) override;
   void Merge(const G4Run*) override;
 
- public:
  private:
   TFile* m_file = nullptr;
   TTree* m_tree = nullptr;
 
   std::vector<int> m_geoId;
+  std::vector<int> m_isSignal;
 
+  std::vector<int> m_parentTrackId;
   std::vector<int> m_trackId;
-  std::vector<int> m_pdgId;
+  std::vector<int> m_runId;
 
   std::vector<TVector3> m_hitPosGlobal;
   std::vector<TVector2> m_hitPosLocal;
+
+  std::vector<TVector3> m_hitMomDir;
+  std::vector<double> m_hitE;
+
+  std::vector<TVector3> m_ipMomDir;
+  std::vector<double> m_ipE;
   std::vector<TVector3> m_vertex;
 
-  std::vector<TVector3> m_momDir;
-  std::vector<TVector3> m_momDirIP;
-
   std::vector<double> m_eDep;
-  std::vector<double> m_eTot;
-  std::vector<double> m_eIP;
+  std::vector<int> m_pdgId;
 };
 
 #endif

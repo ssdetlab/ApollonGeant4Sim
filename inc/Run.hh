@@ -19,6 +19,8 @@ class Run : public G4Run {
   TFile* m_file = nullptr;
   TTree* m_tree = nullptr;
 
+  int m_eventId;
+
   std::vector<int> m_geoId;
   std::vector<int> m_isSignal;
 

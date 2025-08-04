@@ -14,6 +14,8 @@ Run::Run(const std::string& filePath, const std::string& treeName) {
   int bufSize = 32000;
   int splitLvl = 0;
 
+  m_tree->Branch("eventId", &m_eventId, bufSize, splitLvl);
+
   m_tree->Branch("geoId", &m_geoId, bufSize, splitLvl);
   m_tree->Branch("isSignal", &m_isSignal, bufSize, splitLvl);
 
@@ -64,6 +66,8 @@ void Run::RecordEvent(const G4Event* event) {
   m_eDep.clear();
   m_pdgId.clear();
 
+  m_eventId = event->GetEventID();
+
   auto* hcOfThisEvent = event->GetHCofThisEvent();
   if (hcOfThisEvent == nullptr) {
     return;
@@ -105,7 +109,7 @@ void Run::RecordEvent(const G4Event* event) {
 
       m_parentTrackId.push_back(hit->GetParentTrackId());
       m_trackId.push_back(hit->GetTrackId());
-      m_runId.push_back(event->GetEventID());
+      m_runId.push_back(Run::GetRunID());
 
       m_hitPosGlobal.push_back(TVector3(hit->GetHitPosGlobal().x(),
                                         hit->GetHitPosGlobal().y(),

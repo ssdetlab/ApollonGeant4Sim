@@ -26,7 +26,7 @@ GeometryPlacement::GeometryPlacement() {
 
   tc1Name = "TrackingChamber1";
 
-  tc1VaccumChamberDistance = 2 * cm;
+  tc1VaccumChamberDistance = 20 * mm;
 
   G4double tcHalfZ = TrackingChamber::instance()->trackingChamberHalfZ;
 
@@ -44,14 +44,14 @@ GeometryPlacement::GeometryPlacement() {
 
   dipoleName = "Dipole";
 
-  dipoleSamplingLayers1Distance = 2 * cm;
+  dipoleSamplingLayers1Distance = 20 * mm;
 
   /// Magnet position in the World
   wdCenterX = vcCenterX;
   wdCenterY = vcCenterY;
 
   wdCenterZ = tc1CenterZ + tcHalfZ + dipoleSamplingLayers1Distance +
-              WendellDipole::instance()->wdHalfZ;
+              WendellDipole::instance()->wdHalfX;
 
   /// Dipole rotation parameters in the World frame
   wdRotationAngleX = M_PI_2 * rad;
@@ -63,11 +63,11 @@ GeometryPlacement::GeometryPlacement() {
 
   tc2Name = "TrackingChamber2";
 
-  tc2DipoleDistance = 2 * cm;
+  tc2DipoleDistance = 20 * mm;
 
   tc2CenterX = vcCenterX;
   tc2CenterY = vcCenterY;
-  tc2CenterZ = wdCenterZ + WendellDipole::instance()->wdHalfZ +
+  tc2CenterZ = wdCenterZ + WendellDipole::instance()->wdHalfX +
                tc2DipoleDistance + tcHalfZ;
 
   tc2RotationAngleX = 0;

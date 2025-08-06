@@ -208,7 +208,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(opppSensitiveTranslation2.x(),
                     opppSensitiveTranslation2.y(),
                     physTrackingChamber2->GetTranslation().z()) +
-      G4ThreeVector(translation2, translation2, 0) +
+      G4ThreeVector(translation1, translation1 + translation2, 0) +
       G4ThreeVector((physTrackingChamber2->GetTranslation().z() -
                      gc::VacuumChamber::instance()->vcRad) /
                         std::tan(M_PI_2 - angle),

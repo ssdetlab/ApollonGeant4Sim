@@ -27,18 +27,20 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(int nParticles,
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* event) {
-  m_particleGun->SetParticlePosition(G4ThreeVector());
-
   auto normal = std::normal_distribution<>(0, 1);
   auto uniform = std::uniform_real_distribution<>(0, 1);
 
+  double x = -7 + 14 * uniform(m_rng);
+  double y = -14 + 28 * uniform(m_rng);
+
+  m_particleGun->SetParticlePosition(G4ThreeVector(x, y, 0));
   double E = m_particleEnergyMin +
              (m_particleEnergyMax - m_particleEnergyMin) * uniform(m_rng);
 
-  // double phi = -2.293 + m_sigmaPhi * normal(m_rng);
-  // double theta = 0.058 + m_sigmaTheta * normal(m_rng);
-  double phi = 0 + m_sigmaPhi * normal(m_rng);
-  double theta = 0 + m_sigmaTheta * normal(m_rng);
+  double phi = 0 + 0 * normal(m_rng);
+  double theta = 0 + 0 * normal(m_rng);
+  // double phi = 0 + m_sigmaPhi * normal(m_rng);
+  // double theta = 0 + m_sigmaTheta * normal(m_rng);
 
   G4ThreeVector dir(std::sin(theta) * std::cos(phi),
                     std::sin(theta) * std::sin(phi), std::cos(theta));

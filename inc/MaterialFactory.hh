@@ -6,11 +6,6 @@
 #include "G4SystemOfUnits.hh"
 #include "G4Types.hh"
 
-namespace GeometryConstants {
-
-/// ---------------------------------------------------
-/// Custom materials
-
 namespace Material {
 
 namespace Al6061 {
@@ -111,8 +106,6 @@ const G4double density = 1.31 * g / cm3;
 }  // namespace PBT
 
 }  // namespace Material
-
-}  // namespace GeometryConstants
 
 class MaterialFactory {
  public:

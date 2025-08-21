@@ -3,7 +3,7 @@
 #include "G4Material.hh"
 #include "G4NistManager.hh"
 
-namespace mat = GeometryConstants::Material;
+namespace mat = Material;
 
 MaterialFactory *MaterialFactory::m_instance = nullptr;
 

@@ -17,8 +17,6 @@
 #include "G4VSolid.hh"
 #include "G4VisAttributes.hh"
 
-namespace GeometryConstants {
-
 Breadboard *Breadboard::m_instance = nullptr;
 
 Breadboard::Breadboard() {
@@ -38,8 +36,6 @@ Breadboard *Breadboard::instance() {
   }
   return m_instance;
 }
-
-}  // namespace GeometryConstants
 
 G4VPhysicalVolume *BreadboardFactory::construct(G4LogicalVolume *logicParent,
                                                 const Config &cfg) {

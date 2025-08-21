@@ -12,8 +12,6 @@
 class G4LogicalVolume;
 class G4PhysicalVolume;
 
-namespace GeometryConstants {
-
 struct Breadboard {
   Breadboard();
   ~Breadboard() = default;
@@ -33,8 +31,6 @@ struct Breadboard {
   static Breadboard *m_instance;
 };
 
-}  // namespace GeometryConstants
-
 class BreadboardFactory {
  public:
   struct Config {
@@ -51,7 +47,7 @@ class BreadboardFactory {
     G4double bbRotationAngleY;
     G4double bbRotationAngleZ;
 
-    const GeometryConstants::Breadboard *bbc;
+    const Breadboard *bbc;
 
     /// Check overlaps flag
     G4bool checkOverlaps;

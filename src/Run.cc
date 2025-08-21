@@ -43,29 +43,6 @@ Run::~Run() {
 }
 
 void Run::RecordEvent(const G4Event* event) {
-  if (event->GetEventID() % 100000 == 0) {
-    std::cout << event->GetEventID() << "\n";
-  }
-  m_geoId.clear();
-  m_isSignal.clear();
-
-  m_parentTrackId.clear();
-  m_trackId.clear();
-  m_runId.clear();
-
-  m_hitPosGlobal.clear();
-  m_hitPosLocal.clear();
-
-  m_hitMomDir.clear();
-  m_hitE.clear();
-
-  m_ipMomDir.clear();
-  m_ipE.clear();
-  m_vertex.clear();
-
-  m_eDep.clear();
-  m_pdgId.clear();
-
   m_eventId = event->GetEventID();
 
   auto* hcOfThisEvent = event->GetHCofThisEvent();
@@ -76,25 +53,50 @@ void Run::RecordEvent(const G4Event* event) {
   for (std::size_t i = 0; i < nCollections; i++) {
     auto* hitCollection = hcOfThisEvent->GetHC(i);
     std::size_t hcSize = hitCollection->GetSize();
+    if (hcSize == 0) {
+      continue;
+    }
 
+    m_geoId.clear();
     m_geoId.reserve(hcSize);
+
+    m_isSignal.clear();
     m_isSignal.reserve(hcSize);
 
+    m_parentTrackId.clear();
     m_parentTrackId.reserve(hcSize);
+
+    m_trackId.clear();
     m_trackId.reserve(hcSize);
+
+    m_runId.clear();
     m_runId.reserve(hcSize);
 
+    m_hitPosGlobal.clear();
     m_hitPosGlobal.reserve(hcSize);
+
+    m_hitPosLocal.clear();
     m_hitPosLocal.reserve(hcSize);
 
+    m_hitMomDir.clear();
     m_hitMomDir.reserve(hcSize);
+
+    m_hitE.clear();
     m_hitE.reserve(hcSize);
 
+    m_ipMomDir.clear();
     m_ipMomDir.reserve(hcSize);
+
+    m_ipE.clear();
     m_ipE.reserve(hcSize);
+
+    m_vertex.clear();
     m_vertex.reserve(hcSize);
 
+    m_eDep.clear();
     m_eDep.reserve(hcSize);
+
+    m_pdgId.clear();
     m_pdgId.reserve(hcSize);
 
     for (std::size_t j = 0; j < hcSize; j++) {
@@ -102,8 +104,8 @@ void Run::RecordEvent(const G4Event* event) {
 
       m_geoId.push_back(hit->GetGeometryId());
 
-      bool isSignal = (hit->GetPdgId() == 11) && (hit->GetTrackId() == 1) &&
-                      (hit->GetParentTrackId() == 0);
+      int isSignal = (hit->GetPdgId() == 11) && (hit->GetTrackId() == 1) &&
+                     (hit->GetParentTrackId() == 0);
 
       m_isSignal.push_back(isSignal);
 
@@ -111,22 +113,21 @@ void Run::RecordEvent(const G4Event* event) {
       m_trackId.push_back(hit->GetTrackId());
       m_runId.push_back(Run::GetRunID());
 
-      m_hitPosGlobal.push_back(TVector3(hit->GetHitPosGlobal().x(),
-                                        hit->GetHitPosGlobal().y(),
-                                        hit->GetHitPosGlobal().z()));
-      m_hitPosLocal.push_back(
-          TVector2(hit->GetHitPosLocal().x(), hit->GetHitPosLocal().y()));
+      m_hitPosGlobal.emplace_back(hit->GetHitPosGlobal().x(),
+                                  hit->GetHitPosGlobal().y(),
+                                  hit->GetHitPosGlobal().z());
+      m_hitPosLocal.emplace_back(hit->GetHitPosLocal().x(),
+                                 hit->GetHitPosLocal().y());
 
-      m_hitMomDir.push_back(TVector3(hit->GetMomDir().x(), hit->GetMomDir().y(),
-                                     hit->GetMomDir().z()));
+      m_hitMomDir.emplace_back(hit->GetMomDir().x(), hit->GetMomDir().y(),
+                               hit->GetMomDir().z());
       m_hitE.push_back(hit->GetETot());
 
-      m_ipMomDir.push_back(TVector3(hit->GetMomDirIP().x(),
-                                    hit->GetMomDirIP().y(),
-                                    hit->GetMomDirIP().z()));
+      m_ipMomDir.emplace_back(hit->GetMomDirIP().x(), hit->GetMomDirIP().y(),
+                              hit->GetMomDirIP().z());
       m_ipE.push_back(hit->GetEIP());
-      m_vertex.push_back(TVector3(hit->GetVertex().x(), hit->GetVertex().y(),
-                                  hit->GetVertex().z()));
+      m_vertex.emplace_back(hit->GetVertex().x(), hit->GetVertex().y(),
+                            hit->GetVertex().z());
 
       m_eDep.push_back(hit->GetEDep());
       m_pdgId.push_back(hit->GetPdgId());

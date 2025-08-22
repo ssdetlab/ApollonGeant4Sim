@@ -41,7 +41,9 @@ class SamplingHit : public G4VHit {
 
   void SetEDep(G4double de) { m_eDep = de; };
   void SetETot(G4double e) { m_eTot = e; };
+  void SetPTot(G4double p) { m_pTot = p; };
   void SetEIP(G4double e) { m_eIP = e; };
+  void SetPIP(G4double p) { m_pIP = p; };
 
   /// Get methods
   G4int GetGeometryId() const { return m_geoId; };
@@ -59,7 +61,9 @@ class SamplingHit : public G4VHit {
 
   G4double GetEDep() const { return m_eDep; };
   G4double GetETot() const { return m_eTot; };
+  G4double GetPTot() const { return m_pTot; };
   G4double GetEIP() const { return m_eIP; };
+  G4double GetPIP() const { return m_pIP; };
 
  private:
   G4int m_geoId = -1;
@@ -77,7 +81,9 @@ class SamplingHit : public G4VHit {
 
   G4double m_eDep = 0.;
   G4double m_eTot = 0.;
+  G4double m_pTot = 0.;
   G4double m_eIP = 0.;
+  G4double m_pIP = 0.;
 };
 
 using TrackerHitsCollection = G4THitsCollection<SamplingHit>;

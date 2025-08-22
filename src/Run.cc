@@ -28,9 +28,11 @@ Run::Run(const std::string& filePath, const std::string& treeName) {
 
   m_tree->Branch("hitMomDir", &m_hitMomDir, bufSize, splitLvl);
   m_tree->Branch("hitE", &m_hitE, bufSize, splitLvl);
+  m_tree->Branch("hitP", &m_hitP, bufSize, splitLvl);
 
   m_tree->Branch("ipMomDir", &m_ipMomDir, bufSize, splitLvl);
   m_tree->Branch("ipE", &m_ipE, bufSize, splitLvl);
+  m_tree->Branch("ipP", &m_ipP, bufSize, splitLvl);
   m_tree->Branch("vertex", &m_vertex, bufSize, splitLvl);
 
   m_tree->Branch("eDep", &m_eDep, bufSize, splitLvl);
@@ -82,11 +84,17 @@ void Run::RecordEvent(const G4Event* event) {
     m_hitE.clear();
     m_hitE.reserve(hcSize);
 
+    m_hitP.clear();
+    m_hitP.reserve(hcSize);
+
     m_ipMomDir.clear();
     m_ipMomDir.reserve(hcSize);
 
     m_ipE.clear();
     m_ipE.reserve(hcSize);
+
+    m_ipP.clear();
+    m_ipP.reserve(hcSize);
 
     m_vertex.clear();
     m_vertex.reserve(hcSize);
@@ -119,10 +127,12 @@ void Run::RecordEvent(const G4Event* event) {
       m_hitMomDir.emplace_back(hit->GetMomDir().x(), hit->GetMomDir().y(),
                                hit->GetMomDir().z());
       m_hitE.push_back(hit->GetETot());
+      m_hitP.push_back(hit->GetPTot());
 
       m_ipMomDir.emplace_back(hit->GetMomDirIP().x(), hit->GetMomDirIP().y(),
                               hit->GetMomDirIP().z());
       m_ipE.push_back(hit->GetEIP());
+      m_ipP.push_back(hit->GetPIP());
       m_vertex.emplace_back(hit->GetVertex().x(), hit->GetVertex().y(),
                             hit->GetVertex().z());
 

@@ -32,9 +32,11 @@ class Run : public G4Run {
 
   std::vector<TVector3> m_hitMomDir;
   std::vector<double> m_hitE;
+  std::vector<double> m_hitP;
 
   std::vector<TVector3> m_ipMomDir;
   std::vector<double> m_ipE;
+  std::vector<double> m_ipP;
   std::vector<TVector3> m_vertex;
 
   std::vector<double> m_eDep;

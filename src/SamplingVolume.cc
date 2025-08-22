@@ -67,10 +67,12 @@ G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
   newHit->SetEDep(aStep->GetTotalEnergyDeposit());
   newHit->SetETot(track->GetTotalEnergy());
-  newHit->SetEIP(std::sqrt(track->GetVertexKineticEnergy() *
-                               track->GetVertexKineticEnergy() +
-                           track->GetParticleDefinition()->GetPDGMass() *
-                               track->GetParticleDefinition()->GetPDGMass()));
+  newHit->SetPTot(track->GetKineticEnergy());
+
+  double vertexP = track->GetVertexKineticEnergy();
+  double mass = track->GetParticleDefinition()->GetPDGMass();
+  newHit->SetEIP(std::hypot(vertexP, mass));
+  newHit->SetPIP(vertexP);
 
   m_hitsCollection->insert(newHit);
 

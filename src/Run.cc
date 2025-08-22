@@ -43,12 +43,13 @@ Run::~Run() {
 }
 
 void Run::RecordEvent(const G4Event* event) {
-  m_eventId = event->GetEventID();
-
   auto* hcOfThisEvent = event->GetHCofThisEvent();
   if (hcOfThisEvent == nullptr) {
     return;
   }
+  m_eventId = event->GetEventID();
+  m_runId = Run::GetRunID();
+
   std::size_t nCollections = hcOfThisEvent->GetNumberOfCollections();
   for (std::size_t i = 0; i < nCollections; i++) {
     auto* hitCollection = hcOfThisEvent->GetHC(i);
@@ -68,9 +69,6 @@ void Run::RecordEvent(const G4Event* event) {
 
     m_trackId.clear();
     m_trackId.reserve(hcSize);
-
-    m_runId.clear();
-    m_runId.reserve(hcSize);
 
     m_hitPosGlobal.clear();
     m_hitPosGlobal.reserve(hcSize);
@@ -111,7 +109,6 @@ void Run::RecordEvent(const G4Event* event) {
 
       m_parentTrackId.push_back(hit->GetParentTrackId());
       m_trackId.push_back(hit->GetTrackId());
-      m_runId.push_back(Run::GetRunID());
 
       m_hitPosGlobal.emplace_back(hit->GetHitPosGlobal().x(),
                                   hit->GetHitPosGlobal().y(),

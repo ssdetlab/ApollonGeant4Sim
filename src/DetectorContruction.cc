@@ -21,11 +21,14 @@
 #include "WendellDipoleFactory.hh"
 
 DetectorConstruction::DetectorConstruction(double alongSlitTranslation,
-                                           double verticalStagger, double alpha)
+                                           double verticalStagger)
     : translation(alongSlitTranslation),
       stagger(verticalStagger),
-      angle(alpha),
-      G4VUserDetectorConstruction() {}
+      G4VUserDetectorConstruction() {
+  const GeometryConstants &gc = *GeometryConstants::instance();
+  double setupCenter = (gc.tc1CenterZ + gc.wdCenterZ + gc.tc2CenterZ) / 3.0;
+  angle = -std::atan(alongSlitTranslation / setupCenter);
+}
 
 DetectorConstruction::~DetectorConstruction() {}
 
@@ -107,10 +110,12 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(magFieldVolumeTranslation.x(),
                     -magFieldVolumeTranslation.z(),
                     physWendellDipole->GetTranslation().z()) +
-      G4ThreeVector(translation, translation, 0) +
-      G4ThreeVector((physWendellDipole->GetTranslation().z() - gc.vcRad) /
-                        std::tan(M_PI_2 - angle),
-                    0, 0));
+      G4ThreeVector(translation, translation, 0));
+  // G4ThreeVector((physWendellDipole->GetTranslation().z() - gc.vcRad) *
+  //                   std::tan(angle),
+  //               0, 0));
+  // G4ThreeVector(physWendellDipole->GetTranslation().z() * std::tan(angle),
+  //               0, 0));
 
   // ---------------------------------------------------
   // First tracking chamber construction
@@ -155,10 +160,12 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(opppSensitiveTranslation1.x(),
                     opppSensitiveTranslation1.y(),
                     physTrackingChamber1->GetTranslation().z()) +
-      G4ThreeVector(translation, translation, 0) +
-      G4ThreeVector((physTrackingChamber1->GetTranslation().z() - gc.vcRad) /
-                        std::tan(M_PI_2 - angle),
-                    0, 0));
+      G4ThreeVector(translation, translation, 0));
+  // G4ThreeVector((physTrackingChamber1->GetTranslation().z() - gc.vcRad) *
+  //                   std::tan(angle),
+  //               0, 0));
+  // G4ThreeVector(
+  //     physTrackingChamber1->GetTranslation().z() * std::tan(angle), 0, 0));
 
   // ---------------------------------------------------
   // Second tracking chamber construction
@@ -201,10 +208,12 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(opppSensitiveTranslation2.x(),
                     opppSensitiveTranslation2.y(),
                     physTrackingChamber2->GetTranslation().z()) +
-      G4ThreeVector(translation, translation + stagger, 0) +
-      G4ThreeVector((physTrackingChamber2->GetTranslation().z() - gc.vcRad) /
-                        std::tan(M_PI_2 - angle),
-                    0, 0));
+      G4ThreeVector(translation, translation + stagger, 0));
+  // G4ThreeVector((physTrackingChamber2->GetTranslation().z() - gc.vcRad) *
+  //                   std::tan(angle),
+  //               0, 0));
+  // G4ThreeVector(
+  //     physTrackingChamber2->GetTranslation().z() * std::tan(angle), 0, 0));
 
   return physWorld;
 }

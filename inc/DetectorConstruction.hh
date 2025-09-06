@@ -13,8 +13,7 @@ class G4PhysicalVolume;
 
 class DetectorConstruction : public G4VUserDetectorConstruction {
  public:
-  DetectorConstruction(double alongSlitTranslation, double verticalStagger,
-                       double alpha);
+  DetectorConstruction(double alongSlitTranslation, double verticalStagger);
   ~DetectorConstruction() override;
 
   G4VPhysicalVolume* Construct() override;

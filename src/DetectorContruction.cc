@@ -27,7 +27,7 @@ DetectorConstruction::DetectorConstruction(double alongSlitTranslation,
       G4VUserDetectorConstruction() {
   const GeometryConstants &gc = *GeometryConstants::instance();
   double setupCenter = (gc.tc1CenterZ + gc.wdCenterZ + gc.tc2CenterZ) / 3.0;
-  angle = -std::atan(alongSlitTranslation / setupCenter);
+  angle = std::atan(alongSlitTranslation / setupCenter);
 }
 
 DetectorConstruction::~DetectorConstruction() {}

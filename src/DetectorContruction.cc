@@ -27,7 +27,7 @@ DetectorConstruction::DetectorConstruction(double alongSlitTranslation,
       G4VUserDetectorConstruction() {
   const GeometryConstants &gc = *GeometryConstants::instance();
   double setupCenter = (gc.tc1CenterZ + gc.wdCenterZ + gc.tc2CenterZ) / 3.0;
-  angle = std::atan(alongSlitTranslation / setupCenter);
+  angle = std::asin(translation / setupCenter);
 }
 
 DetectorConstruction::~DetectorConstruction() {}
@@ -37,6 +37,9 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   MaterialFactory::instance()->constuctMaterial();
 
   const GeometryConstants &gc = *GeometryConstants::instance();
+  G4ThreeVector setupTranslation(
+      0, 0, (gc.tc1CenterZ + gc.wdCenterZ + gc.tc2CenterZ) / 3.0);
+  G4Rotate3D setupRotation(angle, G4ThreeVector(0, 1, 0));
 
   // ---------------------------------------------------
   // World volume construction
@@ -85,7 +88,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
       .wdRotationAngleX = gc.wdRotationAngleX,
       .wdRotationAngleY = gc.wdRotationAngleY,
-      .wdRotationAngleZ = gc.wdRotationAngleZ - angle,
+      .wdRotationAngleZ = gc.wdRotationAngleZ,
 
       .angle = angle,
 
@@ -106,16 +109,15 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   const auto &magFieldVolumeObject = wdSearchScene.GetFindings().at(0);
   G4ThreeVector magFieldVolumeTranslation =
       magFieldVolumeObject.fFoundObjectTransformation.getTranslation();
-  physWendellDipole->SetTranslation(
+
+  G4ThreeVector wdTranslation =
       G4ThreeVector(magFieldVolumeTranslation.x(),
                     -magFieldVolumeTranslation.z(),
                     physWendellDipole->GetTranslation().z()) +
-      G4ThreeVector(translation, translation, 0));
-  // G4ThreeVector((physWendellDipole->GetTranslation().z() - gc.vcRad) *
-  //                   std::tan(angle),
-  //               0, 0));
-  // G4ThreeVector(physWendellDipole->GetTranslation().z() * std::tan(angle),
-  //               0, 0));
+      G4ThreeVector(0, translation, 0);
+  physWendellDipole->GetRotation()->rotate(angle, G4ThreeVector(0, 0, -1));
+  physWendellDipole->SetTranslation(setupRotation.getRotation() *
+                                    wdTranslation);
 
   // ---------------------------------------------------
   // First tracking chamber construction
@@ -130,7 +132,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       .tcCenterZ = gc.tc1CenterZ,
 
       .tcRotationAngleX = gc.tc1RotationAngleX,
-      .tcRotationAngleY = gc.tc1RotationAngleY - angle,
+      .tcRotationAngleY = gc.tc1RotationAngleY,
       .tcRotationAngleZ = gc.tc1RotationAngleZ,
 
       .gc = GeometryConstants::instance(),
@@ -156,16 +158,15 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   rotm1.rotateZ(gc.tc1RotationAngleZ);
 
   opppSensitiveTranslation1 = rotm1 * opppSensitiveTranslation1;
-  physTrackingChamber1->SetTranslation(
+
+  G4ThreeVector tc1Translation =
       G4ThreeVector(opppSensitiveTranslation1.x(),
                     opppSensitiveTranslation1.y(),
                     physTrackingChamber1->GetTranslation().z()) +
-      G4ThreeVector(translation, translation, 0));
-  // G4ThreeVector((physTrackingChamber1->GetTranslation().z() - gc.vcRad) *
-  //                   std::tan(angle),
-  //               0, 0));
-  // G4ThreeVector(
-  //     physTrackingChamber1->GetTranslation().z() * std::tan(angle), 0, 0));
+      G4ThreeVector(0, translation, 0);
+  physTrackingChamber1->GetRotation()->rotate(angle, G4ThreeVector(1, 0, 0));
+  physTrackingChamber1->SetTranslation(setupRotation.getRotation() *
+                                       tc1Translation);
 
   // ---------------------------------------------------
   // Second tracking chamber construction
@@ -178,7 +179,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       .tcCenterZ = gc.tc2CenterZ,
 
       .tcRotationAngleX = gc.tc2RotationAngleX,
-      .tcRotationAngleY = gc.tc2RotationAngleY - angle,
+      .tcRotationAngleY = gc.tc2RotationAngleY,
       .tcRotationAngleZ = gc.tc2RotationAngleZ,
 
       .gc = GeometryConstants::instance(),
@@ -204,16 +205,15 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   rotm2.rotateZ(gc.tc2RotationAngleZ);
 
   opppSensitiveTranslation2 = rotm1 * opppSensitiveTranslation2;
-  physTrackingChamber2->SetTranslation(
+
+  G4ThreeVector tc2Translation =
       G4ThreeVector(opppSensitiveTranslation2.x(),
                     opppSensitiveTranslation2.y(),
                     physTrackingChamber2->GetTranslation().z()) +
-      G4ThreeVector(translation, translation + stagger, 0));
-  // G4ThreeVector((physTrackingChamber2->GetTranslation().z() - gc.vcRad) *
-  //                   std::tan(angle),
-  //               0, 0));
-  // G4ThreeVector(
-  //     physTrackingChamber2->GetTranslation().z() * std::tan(angle), 0, 0));
+      G4ThreeVector(0, translation, 0);
+  physTrackingChamber2->GetRotation()->rotate(angle, G4ThreeVector(1, 0, 0));
+  physTrackingChamber2->SetTranslation(setupRotation.getRotation() *
+                                       tc2Translation);
 
   return physWorld;
 }

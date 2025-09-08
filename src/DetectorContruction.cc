@@ -210,7 +210,7 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
       G4ThreeVector(opppSensitiveTranslation2.x(),
                     opppSensitiveTranslation2.y(),
                     physTrackingChamber2->GetTranslation().z()) +
-      G4ThreeVector(0, translation, 0);
+      G4ThreeVector(0, translation + stagger, 0);
   physTrackingChamber2->GetRotation()->rotate(angle, G4ThreeVector(1, 0, 0));
   physTrackingChamber2->SetTranslation(setupRotation.getRotation() *
                                        tc2Translation);

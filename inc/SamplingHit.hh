@@ -26,11 +26,18 @@ class SamplingHit : public G4VHit {
   void Print() override;
 
   /// Set methods
-  void SetGeometryId(G4int id) { m_geoId = id; };
+  void SetGeometryId(int id) { m_geoId = id; };
+  void SetPixelId(int idX, int idY) {
+    m_pixIdX = idX;
+    m_pixIdY = idY;
+  };
 
-  void SetParentTrackId(G4int id) { m_parentTrackId = id; };
-  void SetTrackId(G4int id) { m_trackId = id; };
-  void SetPdgId(G4int id) { m_pdgId = id; };
+  void SetParentTrackId(int id) { m_parentTrackId = id; };
+  void SetTrackId(int id) { m_trackId = id; };
+  void SetPdgId(int id) { m_pdgId = id; };
+
+  void SetPixCenterGlobal(G4ThreeVector xyz) { m_pixCenterGlobal = xyz; };
+  void SetPixCenterLocal(G4TwoVector xy) { m_pixCenterLocal = xy; };
 
   void SetHitPosGlobal(G4ThreeVector xyz) { m_hitPosGlobal = xyz; };
   void SetHitPosLocal(G4TwoVector xy) { m_hitPosLocal = xy; };
@@ -39,18 +46,23 @@ class SamplingHit : public G4VHit {
   void SetMomDir(G4ThreeVector xyz) { m_momDir = xyz; };
   void SetMomDirIP(G4ThreeVector xyz) { m_momDirIP = xyz; };
 
-  void SetEDep(G4double de) { m_eDep = de; };
-  void SetETot(G4double e) { m_eTot = e; };
-  void SetPTot(G4double p) { m_pTot = p; };
-  void SetEIP(G4double e) { m_eIP = e; };
-  void SetPIP(G4double p) { m_pIP = p; };
+  void SetEDep(double de) { m_eDep = de; };
+  void SetETot(double e) { m_eTot = e; };
+  void SetPTot(double p) { m_pTot = p; };
+  void SetEIP(double e) { m_eIP = e; };
+  void SetPIP(double p) { m_pIP = p; };
 
   /// Get methods
-  G4int GetGeometryId() const { return m_geoId; };
+  int GetGeometryId() const { return m_geoId; };
 
-  G4int GetParentTrackId() const { return m_parentTrackId; };
-  G4int GetTrackId() const { return m_trackId; };
-  G4int GetPdgId() const { return m_pdgId; };
+  std::pair<int, int> GetPixelId() const { return {m_pixIdX, m_pixIdY}; };
+
+  int GetParentTrackId() const { return m_parentTrackId; };
+  int GetTrackId() const { return m_trackId; };
+  int GetPdgId() const { return m_pdgId; };
+
+  G4ThreeVector GetPixCenterGlobal() const { return m_pixCenterGlobal; };
+  G4TwoVector GetPixCenterLocal() const { return m_pixCenterLocal; };
 
   G4ThreeVector GetHitPosGlobal() const { return m_hitPosGlobal; };
   G4TwoVector GetHitPosLocal() const { return m_hitPosLocal; };
@@ -59,18 +71,24 @@ class SamplingHit : public G4VHit {
   G4ThreeVector GetMomDir() const { return m_momDir; };
   G4ThreeVector GetMomDirIP() const { return m_momDirIP; };
 
-  G4double GetEDep() const { return m_eDep; };
-  G4double GetETot() const { return m_eTot; };
-  G4double GetPTot() const { return m_pTot; };
-  G4double GetEIP() const { return m_eIP; };
-  G4double GetPIP() const { return m_pIP; };
+  double GetEDep() const { return m_eDep; };
+  double GetETot() const { return m_eTot; };
+  double GetPTot() const { return m_pTot; };
+  double GetEIP() const { return m_eIP; };
+  double GetPIP() const { return m_pIP; };
 
  private:
-  G4int m_geoId = -1;
+  int m_geoId = -1;
 
-  G4int m_parentTrackId = -1;
-  G4int m_trackId = -1;
-  G4int m_pdgId = -1;
+  int m_pixIdX = -1;
+  int m_pixIdY = -1;
+
+  int m_parentTrackId = -1;
+  int m_trackId = -1;
+  int m_pdgId = -1;
+
+  G4ThreeVector m_pixCenterGlobal;
+  G4TwoVector m_pixCenterLocal;
 
   G4ThreeVector m_hitPosGlobal;
   G4TwoVector m_hitPosLocal;
@@ -79,11 +97,11 @@ class SamplingHit : public G4VHit {
   G4ThreeVector m_momDir;
   G4ThreeVector m_momDirIP;
 
-  G4double m_eDep = 0.;
-  G4double m_eTot = 0.;
-  G4double m_pTot = 0.;
-  G4double m_eIP = 0.;
-  G4double m_pIP = 0.;
+  double m_eDep = 0.;
+  double m_eTot = 0.;
+  double m_pTot = 0.;
+  double m_eIP = 0.;
+  double m_pIP = 0.;
 };
 
 using TrackerHitsCollection = G4THitsCollection<SamplingHit>;

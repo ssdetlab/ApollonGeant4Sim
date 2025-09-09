@@ -2,6 +2,7 @@
 #define Run_h
 
 #include "G4Run.hh"
+#include "G4SystemOfUnits.hh"
 #include "TFile.h"
 #include "TTree.h"
 #include "TVector2.h"
@@ -9,7 +10,8 @@
 
 class Run : public G4Run {
  public:
-  Run(const std::string& filePath, const std::string& treeName);
+  Run(const std::string& filePath, const std::string& treeName,
+      double pixelThreshold);
   ~Run() override;
 
   void RecordEvent(const G4Event*) override;
@@ -19,8 +21,16 @@ class Run : public G4Run {
   TFile* m_file = nullptr;
   TTree* m_tree = nullptr;
 
-  std::vector<int> m_geoId;
-  std::vector<int> m_isSignal;
+  int m_geoId;
+  int m_pixIdX;
+  int m_pixIdY;
+
+  int m_isSignal;
+
+  TVector2 m_geoCenterLocal;
+  TVector3 m_geoCenterGlobal;
+
+  double m_totEDep;
 
   std::vector<int> m_parentTrackId;
   std::vector<int> m_trackId;
@@ -41,6 +51,9 @@ class Run : public G4Run {
 
   std::vector<double> m_eDep;
   std::vector<int> m_pdgId;
+
+  double m_pairProductionE = 3.62 * eV;
+  double m_pixelThreshold;
 };
 
 #endif

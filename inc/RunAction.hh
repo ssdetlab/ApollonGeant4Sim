@@ -8,7 +8,8 @@ class G4Run;
 
 class RunAction : public G4UserRunAction {
  public:
-  RunAction(const std::string& filePath, const std::string& treeName);
+  RunAction(const std::string& filePath, const std::string& treeName,
+            double pixelThreshold);
   ~RunAction() override = default;
 
   void BeginOfRunAction(const G4Run* run) override;
@@ -18,6 +19,7 @@ class RunAction : public G4UserRunAction {
  private:
   std::string m_filePath;
   std::string m_treeName;
+  double m_pixelThreshold;
 };
 
 #endif

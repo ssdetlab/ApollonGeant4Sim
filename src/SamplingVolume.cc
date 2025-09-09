@@ -1,8 +1,9 @@
 #include "SamplingVolume.hh"
 
-#include <G4RotationMatrix.hh>
+#include <G4TwoVector.hh>
 
 #include "G4HCofThisEvent.hh"
+#include "G4RotationMatrix.hh"
 #include "G4SDManager.hh"
 #include "G4Step.hh"
 #include "G4String.hh"
@@ -22,11 +23,11 @@ void SamplingVolume::Initialize(G4HCofThisEvent* hce) {
       new TrackerHitsCollection(SensitiveDetectorName, collectionName[0]);
 
   // Add this collection in hce
-  G4int hcID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
+  int hcID = G4SDManager::GetSDMpointer()->GetCollectionID(collectionName[0]);
   hce->AddHitsCollection(hcID, m_hitsCollection);
 }
 
-G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
+bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   auto newHit = new SamplingHit();
 
   int id = 100;
@@ -61,6 +62,17 @@ G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
   newHit->SetHitPosGlobal(hitGlobal);
   newHit->SetHitPosLocal({hitLocal.x(), hitLocal.y()});
 
+  int pixIdX = (hitLocal.x() + m_chipX / 2.0) / m_pixelX;
+  int pixIdY = (hitLocal.y() + m_chipY / 2.0) / m_pixelY;
+
+  G4TwoVector pixCenterLocal((pixIdX + 0.5) * m_pixelX - m_chipX / 2.0,
+                             (pixIdY + 0.5) * m_pixelY - m_chipY / 2.0);
+  G4ThreeVector pixCenterGlobal = rotation * pixCenterLocal + origin;
+
+  newHit->SetPixCenterLocal(pixCenterLocal);
+  newHit->SetPixCenterGlobal(pixCenterGlobal);
+  newHit->SetPixelId(pixIdX, pixIdY);
+
   newHit->SetMomDir(track->GetMomentumDirection());
   newHit->SetMomDirIP(track->GetVertexMomentumDirection());
   newHit->SetVertex(track->GetVertexPosition());
@@ -81,10 +93,10 @@ G4bool SamplingVolume::ProcessHits(G4Step* aStep, G4TouchableHistory*) {
 
 void SamplingVolume::EndOfEvent(G4HCofThisEvent* hitCollection) {
   if (verboseLevel > 1) {
-    G4int nofHits = m_hitsCollection->entries();
+    int nofHits = m_hitsCollection->entries();
     G4cout << G4endl << "-------->Hits Collection: in this event they are "
            << nofHits << " hits in the tracker chambers: " << G4endl;
-    for (G4int i = 0; i < nofHits; i++)
+    for (int i = 0; i < nofHits; i++)
       (*m_hitsCollection)[i]->Print();
   }
 

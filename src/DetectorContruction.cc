@@ -1,3 +1,5 @@
+#include <string>
+
 #include "BreadboardFactory.hh"
 #include "BreadboardMountFactory.hh"
 #include "DetectorConstruction.hh"
@@ -124,8 +126,15 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
   TrackingChamberFactory tcFactory;
 
+  std::cout << "\n\n\n\n";
+  for (const auto &[id, pars] : gc.tc1ChipAlignmentPars) {
+    std::cout << "ID " << id << ": " << std::get<0>(pars) << ", "
+              << std::get<1>(pars) << "\n";
+  }
   TrackingChamberFactory::Config tc1FactoryCfg{
       .name = gc.tc1Name,
+
+      .geoIdPrefix = gc.tc1GeoIdPrefix,
 
       .tcCenterX = gc.tc1CenterX,
       .tcCenterY = gc.tc1CenterY,
@@ -137,6 +146,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
       .gc = GeometryConstants::instance(),
 
+      .chipAlignmentPars = gc.tc1ChipAlignmentPars,
+
       .checkOverlaps = true};
 
   G4VPhysicalVolume *physTrackingChamber1 =
@@ -145,7 +156,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   G4PhysicalVolumeModel tc1SearchModel(physTrackingChamber1);
   G4ModelingParameters tc1mp;
   tc1SearchModel.SetModelingParameters(&tc1mp);
-  G4PhysicalVolumesSearchScene tc1SearchScene(&tc1SearchModel, "OPPPSensitive");
+  G4PhysicalVolumesSearchScene tc1SearchScene(
+      &tc1SearchModel, "OPPPSensitive" + std::to_string(gc.tc1GeoIdPrefix));
   tc1SearchModel.DescribeYourselfTo(tc1SearchScene);
 
   const auto &opppObject1 = tc1SearchScene.GetFindings().at(0);
@@ -159,20 +171,29 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
   opppSensitiveTranslation1 = rotm1 * opppSensitiveTranslation1;
 
-  G4ThreeVector tc1Translation =
-      G4ThreeVector(opppSensitiveTranslation1.x(),
-                    opppSensitiveTranslation1.y(),
-                    physTrackingChamber1->GetTranslation().z()) +
-      G4ThreeVector(0, translation, 0);
+  G4ThreeVector tc1Translation = G4ThreeVector(
+      opppSensitiveTranslation1.x(), opppSensitiveTranslation1.y(),
+      physTrackingChamber1->GetTranslation().z());
+  tc1Translation -= G4ThreeVector(
+      std::get<0>(gc.tc1ChipAlignmentPars.at(gc.tc1GeoIdPrefix)),
+      std::get<1>(gc.tc1ChipAlignmentPars.at(gc.tc1GeoIdPrefix)), 0);
+  tc1Translation += G4ThreeVector(0, translation, 0);
   physTrackingChamber1->GetRotation()->rotate(angle, G4ThreeVector(1, 0, 0));
-  physTrackingChamber1->SetTranslation(setupRotation.getRotation() *
-                                       tc1Translation);
+  physTrackingChamber1->SetTranslation(
+      setupRotation.getRotation() * tc1Translation + gc.tc1RigidShift);
 
   // ---------------------------------------------------
   // Second tracking chamber construction
 
+  std::cout << "\n\n\n\n";
+  for (const auto &[id, pars] : gc.tc2ChipAlignmentPars) {
+    std::cout << "ID " << id << ": " << std::get<0>(pars) << ", "
+              << std::get<1>(pars) << "\n";
+  }
   TrackingChamberFactory::Config tc2FactoryCfg{
       .name = gc.tc2Name,
+
+      .geoIdPrefix = gc.tc2GeoIdPrefix,
 
       .tcCenterX = gc.tc2CenterX,
       .tcCenterY = gc.tc2CenterY,
@@ -184,6 +205,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
       .gc = GeometryConstants::instance(),
 
+      .chipAlignmentPars = gc.tc2ChipAlignmentPars,
+
       .checkOverlaps = true};
 
   G4VPhysicalVolume *physTrackingChamber2 =
@@ -192,7 +215,8 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
   G4PhysicalVolumeModel tc2SearchModel(physTrackingChamber2);
   G4ModelingParameters tc2mp;
   tc2SearchModel.SetModelingParameters(&tc2mp);
-  G4PhysicalVolumesSearchScene tc2SearchScene(&tc2SearchModel, "OPPPSensitive");
+  G4PhysicalVolumesSearchScene tc2SearchScene(
+      &tc2SearchModel, "OPPPSensitive" + std::to_string(gc.tc2GeoIdPrefix));
   tc2SearchModel.DescribeYourselfTo(tc2SearchScene);
 
   const auto &opppObject2 = tc2SearchScene.GetFindings().at(0);
@@ -206,14 +230,16 @@ G4VPhysicalVolume *DetectorConstruction::Construct() {
 
   opppSensitiveTranslation2 = rotm1 * opppSensitiveTranslation2;
 
-  G4ThreeVector tc2Translation =
-      G4ThreeVector(opppSensitiveTranslation2.x(),
-                    opppSensitiveTranslation2.y(),
-                    physTrackingChamber2->GetTranslation().z()) +
-      G4ThreeVector(0, translation + stagger, 0);
+  G4ThreeVector tc2Translation = G4ThreeVector(
+      opppSensitiveTranslation2.x(), opppSensitiveTranslation2.y(),
+      physTrackingChamber2->GetTranslation().z());
+  tc2Translation -= G4ThreeVector(
+      std::get<0>(gc.tc2ChipAlignmentPars.at(gc.tc2GeoIdPrefix)),
+      std::get<1>(gc.tc2ChipAlignmentPars.at(gc.tc2GeoIdPrefix)), 0);
+  tc2Translation += G4ThreeVector(0, translation + stagger, 0);
   physTrackingChamber2->GetRotation()->rotate(angle, G4ThreeVector(1, 0, 0));
-  physTrackingChamber2->SetTranslation(setupRotation.getRotation() *
-                                       tc2Translation);
+  physTrackingChamber2->SetTranslation(
+      setupRotation.getRotation() * tc2Translation + gc.tc2RigidShift);
 
   return physWorld;
 }

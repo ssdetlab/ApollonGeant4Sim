@@ -19,6 +19,9 @@ class TrackingChamberFactory {
     /// TC namespace
     std::string name;
 
+    /// Geometry id prefix
+    std::size_t geoIdPrefix;
+
     /// TC position in the World
     G4double tcCenterX;
     G4double tcCenterY;
@@ -29,7 +32,12 @@ class TrackingChamberFactory {
     G4double tcRotationAngleY;
     G4double tcRotationAngleZ;
 
+    /// Geometry constants
     const GeometryConstants *gc;
+
+    /// Local chip misalignments
+    std::unordered_map<int, std::tuple<double, double, double>>
+        chipAlignmentPars;
 
     /// Check overlaps flag
     G4bool checkOverlaps;
@@ -41,14 +49,14 @@ class TrackingChamberFactory {
   G4VPhysicalVolume *construct(G4LogicalVolume *logicParent, const Config &cfg);
 
  private:
-  G4LogicalVolume *constructSensor(const Config &cfg);
+  G4LogicalVolume *constructSensor(const Config &cfg, int geometryId);
 
   G4LogicalVolume *constructLConnector(const Config &cfg);
 
   G4AssemblyVolume *constructNineAlpidePCB(const Config &cfg);
 
   G4LogicalVolume *constructCarrierPCB(G4double &carrierPcbContainerY,
-                                       const Config &cfg);
+                                       const Config &cfg, int nCarrier);
 };
 
 #endif

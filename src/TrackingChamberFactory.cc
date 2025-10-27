@@ -1,6 +1,7 @@
 #include "TrackingChamberFactory.hh"
 
 #include <bitset>
+#include <string>
 
 #include <G4PhysicalVolumeStore.hh>
 #include <G4TransportationManager.hh>
@@ -242,41 +243,38 @@ G4VPhysicalVolume *TrackingChamberFactory::construct(
   nineChipPcbAssy->MakeImprint(logicProtoTrackerContainer, ninechiptr, 0, 0,
                                cfg.checkOverlaps);
 
-  // Carrier PCBs and PCIE connctors
-  G4double CarrierPcbContY;
-  G4LogicalVolume *carrierPcb = constructCarrierPCB(CarrierPcbContY, cfg);
-  G4double carierxpos = hpxpos;
-  G4double carierypos =
-      ninepcbypos + 0.5 * (cfg.gc->ProtoTrackerNinePcbY + CarrierPcbContY);
-  G4int ncarier = 0;
-
-  G4LogicalVolume *logicProtoTrackerPcieCon =
-      G4LogicalVolumeStore::GetInstance()->GetVolume(
-          "logicProtoTrackerPcieCon");
-  if (!logicProtoTrackerPcieCon) {
-    G4String msgstr(
-        "Logical volume of PCIE connctor is not found in the "
-        "G4LogicalVolumeStore.");
-    G4Exception("EttProtoTracker::", "Construct()", FatalException,
-                msgstr.c_str());
-  }
-  G4double pcieypos = ninepcbypos + 0.5 * (cfg.gc->ProtoTrackerNinePcbY +
-                                           cfg.gc->ProtoTrackerPcieConY);
-
   std::bitset<9> sensor_pos_mask(std::string("101010101"));
 
+  G4double CarrierPcbContY;
+  G4double carierxpos = hpxpos;
+  G4double pcieypos = ninepcbypos + 0.5 * (cfg.gc->ProtoTrackerNinePcbY +
+                                           cfg.gc->ProtoTrackerPcieConY);
   for (int ii = 0; ii < sensor_pos_mask.size(); ++ii) {
     G4double carierzpos = cfg.gc->ProtoTrackerLayerDZ * (ii - 4.0);
+    G4LogicalVolume *carrierPcb = constructCarrierPCB(CarrierPcbContY, cfg, ii);
+    G4double carierypos =
+        ninepcbypos + 0.5 * (cfg.gc->ProtoTrackerNinePcbY + CarrierPcbContY);
+
     if (sensor_pos_mask.test(ii)) {
       new G4PVPlacement(0, G4ThreeVector(carierxpos, carierypos, carierzpos),
-                        carrierPcb, "ProtoTrckCarrierPCB",
-                        logicProtoTrackerContainer, false, ii /*ncarier*/,
+                        carrierPcb, "ProtoTrckCarrierPCB" + std::to_string(ii),
+                        logicProtoTrackerContainer, false, ii,
                         cfg.checkOverlaps);
-      ++ncarier;
     } else {
+      // Carrier PCIE connctors
+      G4LogicalVolume *logicProtoTrackerPcieCon =
+          G4LogicalVolumeStore::GetInstance()->GetVolume(
+              "logicProtoTrackerPcieCon" + std::to_string(ii));
+      if (!logicProtoTrackerPcieCon) {
+        G4String msgstr(
+            "Logical volume of PCIE connctor is not found in the "
+            "G4LogicalVolumeStore.");
+        G4Exception("EttProtoTracker::", "Construct()", FatalException,
+                    msgstr.c_str());
+      }
       new G4PVPlacement(0, G4ThreeVector(carierxpos, pcieypos, carierzpos),
                         logicProtoTrackerPcieCon, "ProtoTrckPCIEConnector",
-                        logicProtoTrackerContainer, false, ii /*ii-ncarier*/,
+                        logicProtoTrackerContainer, false, ii,
                         cfg.checkOverlaps);
     }
   }
@@ -290,12 +288,11 @@ G4VPhysicalVolume *TrackingChamberFactory::construct(
       logicProtoTrackerContainer, cfg.name, logicParent, false, 0,
       cfg.checkOverlaps);
 
-  // AddSegmentation();
-
   return physProtoTrackerContainer;
 }
 
-G4LogicalVolume *TrackingChamberFactory::constructSensor(const Config &cfg) {
+G4LogicalVolume *TrackingChamberFactory::constructSensor(const Config &cfg,
+                                                         int geometryId) {
   G4Material *sensorMaterial =
       G4NistManager::Instance()->FindOrBuildMaterial(cfg.gc->trackerMaterial);
   G4Box *solidAlpideSensor =
@@ -312,12 +309,27 @@ G4LogicalVolume *TrackingChamberFactory::constructSensor(const Config &cfg) {
   G4LogicalVolume *logicAlpideSensitive = new G4LogicalVolume(
       solidAlpideSensitive, sensorMaterial, "logicAlpideSensitive");
 
+  G4double opppSensX = 0;
+  G4double opppSensY = (cfg.gc->OPPPSensorY - sensy) / 2.0;
+  G4RotationMatrix *sensRotM = nullptr;
+  std::cout << "\n\n\nOPPP0 " << geometryId << ": " << opppSensX << " "
+            << opppSensY << "\n";
+  if (cfg.chipAlignmentPars.contains(geometryId)) {
+    opppSensX += std::get<0>(cfg.chipAlignmentPars.at(geometryId));
+    opppSensY += std::get<1>(cfg.chipAlignmentPars.at(geometryId));
+    sensRotM =
+        new G4RotationMatrix(G4ThreeVector(0, 0, 1),
+                             std::get<2>(cfg.chipAlignmentPars.at(geometryId)));
+  }
+  std::cout << "\n\n\nOPPP " << geometryId << ": " << opppSensX << " "
+            << opppSensY << "\n";
+  std::cout << "CONTAINS " << cfg.chipAlignmentPars.contains(geometryId);
   new G4PVPlacement(
-      0,
-      G4ThreeVector(0.0, (cfg.gc->OPPPSensorY - sensy) / 2.0,
+      sensRotM,
+      G4ThreeVector(opppSensX, opppSensY,
                     (cfg.gc->OPPPSensorPixelZ - cfg.gc->OPPPSensorZ) / 2.0),
-      logicAlpideSensitive, "OPPPSensitive", logicAlpideSensor, false, 0,
-      cfg.checkOverlaps);
+      logicAlpideSensitive, "OPPPSensitive" + std::to_string(geometryId),
+      logicAlpideSensor, false, 0, cfg.checkOverlaps);
   return logicAlpideSensor;
 }
 
@@ -404,7 +416,7 @@ G4AssemblyVolume *TrackingChamberFactory::constructNineAlpidePCB(
 }
 
 G4LogicalVolume *TrackingChamberFactory::constructCarrierPCB(
-    G4double &carrierPcbContainerY, const Config &cfg) {
+    G4double &carrierPcbContainerY, const Config &cfg, int nCarrier) {
   G4Material *protoTrackerContainerMaterial =
       G4NistManager::Instance()->FindOrBuildMaterial(
           cfg.gc->trackerContainerMaterial);
@@ -430,7 +442,7 @@ G4LogicalVolume *TrackingChamberFactory::constructCarrierPCB(
       "solidCarrierPcbContainer", ccontx / 2.0, cconty / 2.0, ccontz / 2.0);
   G4LogicalVolume *logicCarrierPcbContainer = new G4LogicalVolume(
       solidCarrierPcbContainer, protoTrackerContainerMaterial,
-      "logicCarrierPcbContainer");
+      "logicCarrierPcbContainer" + std::to_string(nCarrier));
 
   // Carrier PCB
   G4Box *solidCarrierPcb1 = new G4Box(
@@ -487,16 +499,18 @@ G4LogicalVolume *TrackingChamberFactory::constructCarrierPCB(
                     cfg.checkOverlaps);
 
   // Alpide sensor
-  G4LogicalVolume *logicAlpideSensor = constructSensor(cfg);
-
+  int sensGeoId = cfg.geoIdPrefix + nCarrier;
+  G4LogicalVolume *logicAlpideSensor = constructSensor(cfg, sensGeoId);
   G4double sensypos =
       crpcbypos + 0.5 * (cfg.gc->ProtoTrkCarrierPcbY - cfg.gc->OPPPSensorY) -
       cfg.gc->ProtoTrkCarrierPcbCutYpos - cfg.gc->ProtoTrkCarrierSensorOffset;
   G4double senszpos =
       -0.5 * (cfg.gc->ProtoTrkCarrierPcbZ + cfg.gc->OPPPSensorZ);
   G4PVPlacement *physAlpideSensor = new G4PVPlacement(
-      0, G4ThreeVector(0.0, sensypos, senszpos), logicAlpideSensor,
+      0, G4ThreeVector(0, sensypos, senszpos), logicAlpideSensor,
       "AlpideSensor", logicCarrierPcbContainer, false, 0, cfg.checkOverlaps);
+  std::cout << "\n\n\n ALPIDE " << sensGeoId << ": "
+            << physAlpideSensor->GetTranslation() << "\n\n\n";
 
   // PCIE connector
   G4Box *solidProtoTrackerPcieCon1 = new G4Box(
@@ -511,9 +525,9 @@ G4LogicalVolume *TrackingChamberFactory::constructCarrierPCB(
   G4SubtractionSolid *solidProtoTrackerPcieCon = new G4SubtractionSolid(
       "solidProtoTrackerPcieCon", solidProtoTrackerPcieCon1,
       solidProtoTrackerPcieConCut, pcietrcut);
-  G4LogicalVolume *logicProtoTrackerPcieCon =
-      new G4LogicalVolume(solidProtoTrackerPcieCon, trackerPcieConMaterial,
-                          "logicProtoTrackerPcieCon");
+  G4LogicalVolume *logicProtoTrackerPcieCon = new G4LogicalVolume(
+      solidProtoTrackerPcieCon, trackerPcieConMaterial,
+      "logicProtoTrackerPcieCon" + std::to_string(nCarrier));
   G4double pcieypos = 0.5 * (cfg.gc->ProtoTrackerPcieConY - cconty);
   new G4PVPlacement(0, G4ThreeVector(0.0, pcieypos, 0.0),
                     logicProtoTrackerPcieCon, "ProtoTrackerPcieConnector",

@@ -1,6 +1,9 @@
 #ifndef GeometryParameters_h
 #define GeometryParameters_h
 
+#include <cstddef>
+#include <unordered_map>
+
 #include "G4SystemOfUnits.hh"
 #include "G4ThreeVector.hh"
 #include "G4Types.hh"
@@ -135,7 +138,7 @@ struct GeometryConstants {
   const G4double wmHalfZ = wmIronYokeBottomHalfZ + wmIronYokeSideHalfZ;
 
   /// --------------------------------------------------------------
-  /// Vacuum chamber
+  /// Tracking chamber
 
   const G4double inch = 25.4 * mm;
 
@@ -281,6 +284,16 @@ struct GeometryConstants {
   const G4double tc1RotationAngleY = 0;
   const G4double tc1RotationAngleZ = M_PI_2;
 
+  const std::size_t tc1GeoIdPrefix = 10;
+  const std::unordered_map<int, std::tuple<double, double, double>>
+      tc1ChipAlignmentPars{{tc1GeoIdPrefix + 0, {1 * mm, -1 * mm, 45 * deg}},
+                           {tc1GeoIdPrefix + 2, {2 * mm, -2 * mm, -45 * deg}},
+                           {tc1GeoIdPrefix + 4, {3 * mm, -3 * mm, 45 * deg}},
+                           {tc1GeoIdPrefix + 6, {4 * mm, -4 * mm, -45 * deg}},
+                           {tc1GeoIdPrefix + 8, {5 * mm, -5 * mm, 45 * deg}}};
+
+  const G4ThreeVector tc1RigidShift = G4ThreeVector(10 * mm, 10 * mm, 0);
+
   /// ---------------------------------------------------
   /// Dipole
 
@@ -298,6 +311,16 @@ struct GeometryConstants {
   const G4double wdRotationAngleX = M_PI_2 * rad;
   const G4double wdRotationAngleY = 0;
   const G4double wdRotationAngleZ = M_PI_2 * rad;
+
+  const std::size_t tc2GeoIdPrefix = 20;
+  const std::unordered_map<int, std::tuple<double, double, double>>
+      tc2ChipAlignmentPars{{tc2GeoIdPrefix + 0, {6 * mm, -6 * mm, 0}},
+                           {tc2GeoIdPrefix + 2, {7 * mm, -7 * mm, 0}},
+                           {tc2GeoIdPrefix + 4, {8 * mm, -8 * mm, 0}},
+                           {tc2GeoIdPrefix + 6, {9 * mm, -9 * mm, 0}},
+                           {tc2GeoIdPrefix + 8, {10 * mm, -10 * mm, 0}}};
+
+  const G4ThreeVector tc2RigidShift = G4ThreeVector(-20 * mm, -10 * mm, 0);
 
   /// ---------------------------------------------------
   /// Tracking chamber 2
